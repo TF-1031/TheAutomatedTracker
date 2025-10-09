@@ -1,89 +1,181 @@
-# Repository Structure
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sparklight Offer Management</title>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f9fafb;
+      color: #111;
+      padding: 20px;
+    }
+    h1 {
+      color: #0c4a6e;
+    }
+    form {
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+      margin-bottom: 30px;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: 600;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      margin-top: 4px;
+    }
+    button {
+      margin-top: 15px;
+      background: #0284c7;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #0369a1;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      padding: 10px;
+      border: 1px solid #ddd;
+    }
+    th {
+      background: #e0f2fe;
+    }
+    .status {
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+  <h1>💡 Sparklight Offer Management</h1>
 
-```
-📁 sparklight-offer-manager
-├── index.html          # Main app file
-├── README.md           # Repo overview and setup instructions
-├── .gitignore          # Files to ignore in Git
-└── /assets             # (optional) folder for proofs, CSS, JS
-```
+  <form id="offerForm">
+    <label>Campaign Name</label>
+    <input type="text" id="campaign" placeholder="e.g. BFCM (11/28–12/5)" required>
 
----
+    <label>Offer</label>
+    <input type="text" id="offer" placeholder="e.g. 600 Mbps for $29.95/mo. for 6 mos.">
 
-## 📄 index.html
-This is the full working HTML file for the Offer Management System (already built). It contains:
-- Form for entering campaign data
-- Dropdowns for disclaimers and status
-- File upload field for proofs
-- Table view for all entries
-- CSV export functionality
+    <label>Gift Card</label>
+    <input type="text" id="giftCard" placeholder="$50">
 
----
+    <label>Fiber Fueled?</label>
+    <select id="fiberFueled">
+      <option value="false">No</option>
+      <option value="true">Yes</option>
+    </select>
 
-## 🧾 README.md
-```markdown
-# Sparklight Offer Management System
+    <label>eero/Plume?</label>
+    <select id="eeroPlume">
+      <option value="false">No</option>
+      <option value="true">Yes</option>
+    </select>
 
-A lightweight internal tool for tracking Sparklight promotional offers, disclaimers, and proof uploads. Built with HTML, CSS, and vanilla JavaScript.
+    <label>Ookla?</label>
+    <select id="ookla">
+      <option value="false">No</option>
+      <option value="true">Yes</option>
+    </select>
 
-## 🚀 Features
-- Add new offers with all key fields
-- Automatically track required disclaimers (Fiber, eero/Plume, Ookla)
-- Upload final creative proofs
-- Export all offers to CSV
-- Clean and responsive UI using vanilla HTML/CSS
+    <label>Status</label>
+    <select id="status">
+      <option value="Not Started">Not Started</option>
+      <option value="In Review">In Review</option>
+      <option value="Complete">Complete</option>
+    </select>
 
-## 🧠 How It Works
-Each new entry adds a row to the table. You can export all data to a CSV for record-keeping or review.
+    <label>Upload Proof</label>
+    <input type="file" id="proof" accept=".png,.pdf,.jpg,.jpeg">
 
-## 🧩 Setup
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/YOUR_USERNAME/sparklight-offer-manager.git
-   cd sparklight-offer-manager
-   ```
-2. Open `index.html` in your browser.
-3. To host publicly, enable **GitHub Pages**:
-   - Go to **Settings → Pages**
-   - Set source to `main` branch, `/root`
-   - Save and view your live site
+    <button type="submit">Add Offer</button>
+    <button type="button" id="exportBtn">Export CSV</button>
+  </form>
 
-## 🪄 Optional Enhancements
-- Connect to Firebase or Airtable for multi-user persistence
-- Add login roles (Creative, Legal, Marketing)
-- Include proof preview thumbnails
-- Add audit log for version tracking
+  <table id="offersTable">
+    <thead>
+      <tr>
+        <th>Campaign</th>
+        <th>Offer</th>
+        <th>Gift Card</th>
+        <th>Fiber</th>
+        <th>eero/Plume</th>
+        <th>Ookla</th>
+        <th>Status</th>
+        <th>Proof</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
-## ❤️ Credits
-Created by the Creative Services Team for Sparklight, maintained by Alt-Caroline.
+  <script>
+    const form = document.getElementById('offerForm');
+    const tableBody = document.querySelector('#offersTable tbody');
+    const exportBtn = document.getElementById('exportBtn');
 
-©2025 Cable One, Inc. All rights reserved.
-```
+    const offers = [];
 
----
+    form.addEventListener('submit', e => {
+      e.preventDefault();
 
-## ⚙️ .gitignore
-```gitignore
-# Node / build files (if you add automation later)
-node_modules/
-.DS_Store
-.env
+      const newOffer = {
+        campaign: document.getElementById('campaign').value,
+        offer: document.getElementById('offer').value,
+        giftCard: document.getElementById('giftCard').value,
+        fiber: document.getElementById('fiberFueled').value === 'true' ? '✅' : '❌',
+        eero: document.getElementById('eeroPlume').value === 'true' ? '✅' : '❌',
+        ookla: document.getElementById('ookla').value === 'true' ? '✅' : '❌',
+        status: document.getElementById('status').value,
+        proof: document.getElementById('proof').files[0]?.name || 'Pending'
+      };
 
-# Exported files
-*.csv
-*.xlsx
+      offers.push(newOffer);
 
-# Uploaded proofs
-/assets/proofs/
-*.pdf
-*.png
-*.jpg
-*.jpeg
+      const newRow = document.createElement('tr');
+      newRow.innerHTML = `
+        <td>${newOffer.campaign}</td>
+        <td>${newOffer.offer}</td>
+        <td>${newOffer.giftCard}</td>
+        <td>${newOffer.fiber}</td>
+        <td>${newOffer.eero}</td>
+        <td>${newOffer.ookla}</td>
+        <td class='status'>${newOffer.status}</td>
+        <td>${newOffer.proof}</td>`;
+      tableBody.appendChild(newRow);
 
-# System files
-Thumbs.db
-```
+      form.reset();
+    });
 
----
+    exportBtn.addEventListener('click', () => {
+      const csvRows = [];
+      const headers = ['Campaign','Offer','Gift Card','Fiber','eero/Plume','Ookla','Status','Proof'];
+      csvRows.push(headers.join(','));
 
-Once you’ve added these three files to your repo and committed them, you’ll have a fully deployable mini-app for internal creative offer tracking 💕
+      offers.forEach(o => {
+        csvRows.push([o.campaign, o.offer, o.giftCard, o.fiber, o.eero, o.ookla, o.status, o.proof].join(','));
+      });
+
+      const blob = new Blob([csvRows.join('\\n')], { type: 'text/csv' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'offers_export.csv';
+      a.click();
+    });
+  </script>
+</body>
+</html>
