@@ -1,0 +1,89 @@
+# Repository Structure
+
+```
+📁 sparklight-offer-manager
+├── index.html          # Main app file
+├── README.md           # Repo overview and setup instructions
+├── .gitignore          # Files to ignore in Git
+└── /assets             # (optional) folder for proofs, CSS, JS
+```
+
+---
+
+## 📄 index.html
+This is the full working HTML file for the Offer Management System (already built). It contains:
+- Form for entering campaign data
+- Dropdowns for disclaimers and status
+- File upload field for proofs
+- Table view for all entries
+- CSV export functionality
+
+---
+
+## 🧾 README.md
+```markdown
+# Sparklight Offer Management System
+
+A lightweight internal tool for tracking Sparklight promotional offers, disclaimers, and proof uploads. Built with HTML, CSS, and vanilla JavaScript.
+
+## 🚀 Features
+- Add new offers with all key fields
+- Automatically track required disclaimers (Fiber, eero/Plume, Ookla)
+- Upload final creative proofs
+- Export all offers to CSV
+- Clean and responsive UI using vanilla HTML/CSS
+
+## 🧠 How It Works
+Each new entry adds a row to the table. You can export all data to a CSV for record-keeping or review.
+
+## 🧩 Setup
+1. Clone the repository:
+   ```bash
+   git clone https://github.com/YOUR_USERNAME/sparklight-offer-manager.git
+   cd sparklight-offer-manager
+   ```
+2. Open `index.html` in your browser.
+3. To host publicly, enable **GitHub Pages**:
+   - Go to **Settings → Pages**
+   - Set source to `main` branch, `/root`
+   - Save and view your live site
+
+## 🪄 Optional Enhancements
+- Connect to Firebase or Airtable for multi-user persistence
+- Add login roles (Creative, Legal, Marketing)
+- Include proof preview thumbnails
+- Add audit log for version tracking
+
+## ❤️ Credits
+Created by the Creative Services Team for Sparklight, maintained by Alt-Caroline.
+
+©2025 Cable One, Inc. All rights reserved.
+```
+
+---
+
+## ⚙️ .gitignore
+```gitignore
+# Node / build files (if you add automation later)
+node_modules/
+.DS_Store
+.env
+
+# Exported files
+*.csv
+*.xlsx
+
+# Uploaded proofs
+/assets/proofs/
+*.pdf
+*.png
+*.jpg
+*.jpeg
+
+# System files
+Thumbs.db
+```
+
+---
+
+Once you’ve added these three files to your repo and committed them, you’ll have a fully deployable mini-app for internal creative offer tracking 💕
