@@ -1,181 +1,492 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Sparklight Offer Management</title>
+
+  <!-- SheetJS for XLSX export -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
   <style>
-    body {
-      font-family: 'Inter', sans-serif;
-      background: #f9fafb;
-      color: #111;
-      padding: 20px;
+    :root {
+      --bg: #f8fafc;
+      --card: #ffffff;
+      --ink: #0f172a;
+      --muted: #334155;
+      --brand: #0284c7;
+      --brand-dark: #0369a1;
+      --line: #e2e8f0;
+      --good: #16a34a;
+      --bad: #dc2626;
     }
-    h1 {
-      color: #0c4a6e;
+    * { box-sizing: border-box; }
+    body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji"; background: var(--bg); color: var(--ink); }
+    .wrap { max-width: 1100px; margin: 32px auto; padding: 0 16px; }
+    h1 { margin: 0 0 16px; color: var(--brand-dark); font-weight: 800; letter-spacing: -0.02em; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 6px 20px rgba(2,8,23,.05); padding: 20px; margin-bottom: 20px; }
+    .grid { display: grid; gap: 14px; grid-template-columns: repeat(12, 1fr); }
+    .col-6 { grid-column: span 6; } .col-4 { grid-column: span 4; } .col-3 { grid-column: span 3; } .col-12 { grid-column: span 12; }
+    label { font-size: 12px; text-transform: uppercase; color: var(--muted); letter-spacing: .06em; display: block; margin-bottom: 4px; }
+    input[type="text"], input[type="number"], select, textarea {
+      width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; font-size: 14px; background: #fff;
     }
-    form {
-      background: #fff;
-      padding: 20px;
-      border-radius: 12px;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-      margin-bottom: 30px;
-    }
-    label {
-      display: block;
-      margin-top: 10px;
-      font-weight: 600;
-    }
-    input, select, textarea {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      margin-top: 4px;
-    }
-    button {
-      margin-top: 15px;
-      background: #0284c7;
-      color: white;
-      border: none;
-      padding: 10px 15px;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: #0369a1;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-    }
-    th, td {
-      padding: 10px;
-      border: 1px solid #ddd;
-    }
-    th {
-      background: #e0f2fe;
-    }
-    .status {
-      font-weight: 600;
-    }
+    .row { display: flex; align-items: center; gap: 10px; }
+    .hint { font-size: 12px; color: var(--muted); }
+    .btn { appearance: none; border: none; background: var(--brand); color: #fff; font-weight: 700; padding: 10px 14px; border-radius: 10px; cursor: pointer; }
+    .btn:hover { background: var(--brand-dark); }
+    .btn.secondary { background: #0ea5e9; } .btn.secondary:hover{ background:#0284c7; }
+    .btn.ghost { background: transparent; color: var(--brand-dark); border: 1px solid var(--line); }
+    .btn.danger { background: var(--bad); } .btn.success { background: var(--good); }
+    table { width: 100%; border-collapse: collapse; border: 1px solid var(--line); overflow: hidden; border-radius: 12px; }
+    th, td { border-bottom: 1px solid var(--line); padding: 10px 12px; text-align: left; font-size: 14px; vertical-align: top; }
+    thead th { background: #e0f2fe; position: sticky; top: 0; z-index: 1; }
+    .chip { padding: 2px 8px; border-radius: 999px; font-size: 12px; border: 1px solid var(--line); display: inline-block; }
+    .right { display:flex; gap:10px; justify-content:flex-end; }
+    .hide { display: none; }
+    .hr { height:1px; background:var(--line); margin:10px 0 2px; }
   </style>
 </head>
 <body>
-  <h1>💡 Sparklight Offer Management</h1>
+  <div class="wrap">
+    <h1>💡 Sparklight Offer Management</h1>
 
-  <form id="offerForm">
-    <label>Campaign Name</label>
-    <input type="text" id="campaign" placeholder="e.g. BFCM (11/28–12/5)" required>
+    <!-- FORM -->
+    <div class="card">
+      <form id="offerForm">
+        <div class="grid">
+          <div class="col-4">
+            <label>Versions</label>
+            <input type="text" id="versions" placeholder="e.g., Core/Enhanced">
+          </div>
+          <div class="col-4">
+            <label>Type</label>
+            <select id="type">
+              <option value="">—</option>
+              <option>HFC</option>
+              <option>Fiber</option>
+              <option>HFC+Fiber</option>
+            </select>
+          </div>
+          <div class="col-4">
+            <label>Campaign</label>
+            <input type="text" id="campaign" placeholder="e.g., BFCM (11/28–12/5)" required>
+          </div>
 
-    <label>Offer</label>
-    <input type="text" id="offer" placeholder="e.g. 600 Mbps for $29.95/mo. for 6 mos.">
+          <div class="col-12">
+            <label>Offer (headline)</label>
+            <input type="text" id="offer" placeholder="e.g., 600 Mbps for $29.95/mo. for 6 mos.">
+          </div>
 
-    <label>Gift Card</label>
-    <input type="text" id="giftCard" placeholder="$50">
+          <div class="col-3">
+            <label>Download Speed</label>
+            <input type="text" id="down" placeholder="e.g., 600 Mbps">
+          </div>
+          <div class="col-3">
+            <label>Upload Speed</label>
+            <input type="text" id="up" placeholder="e.g., 40 Mbps">
+          </div>
+          <div class="col-3">
+            <label>Promo Price</label>
+            <input type="text" id="promo" placeholder="$29.95">
+          </div>
+          <div class="col-3">
+            <label>Term (months)</label>
+            <input type="text" id="term" placeholder="6">
+          </div>
 
-    <label>Fiber Fueled?</label>
-    <select id="fiberFueled">
-      <option value="false">No</option>
-      <option value="true">Yes</option>
-    </select>
+          <!-- Gift Card -->
+          <div class="col-3">
+            <label>Gift Card</label>
+            <div class="row">
+              <input type="checkbox" id="gcCheck">
+              <input type="text" id="gcAmt" class="hide" placeholder="$50">
+            </div>
+            <div class="hint">Check to enable amount</div>
+          </div>
 
-    <label>eero/Plume?</label>
-    <select id="eeroPlume">
-      <option value="false">No</option>
-      <option value="true">Yes</option>
-    </select>
+          <!-- Step-Up -->
+          <div class="col-3">
+            <label>Step-Up Term</label>
+            <div class="row">
+              <input type="checkbox" id="suTermCheck">
+              <input type="text" id="suTerm" class="hide" placeholder="7–12 mos">
+            </div>
+          </div>
+          <div class="col-3">
+            <label>Step-Up Price</label>
+            <div class="row">
+              <input type="checkbox" id="suPriceCheck">
+              <input type="text" id="suPrice" class="hide" placeholder="$59.95">
+            </div>
+          </div>
+          <div class="col-3">
+            <label>Reg Rate</label>
+            <input type="text" id="reg" placeholder="$75–$90">
+          </div>
 
-    <label>Ookla?</label>
-    <select id="ookla">
-      <option value="false">No</option>
-      <option value="true">Yes</option>
-    </select>
+          <div class="col-4">
+            <label>Equip Inclu.</label>
+            <select id="equip">
+              <option value="">—</option>
+              <option>No</option>
+              <option>eero</option>
+              <option>eero Pro 6E</option>
+              <option>Plume</option>
+            </select>
+          </div>
 
-    <label>Status</label>
-    <select id="status">
-      <option value="Not Started">Not Started</option>
-      <option value="In Review">In Review</option>
-      <option value="Complete">Complete</option>
-    </select>
+          <!-- Disclaimers (as separate Yes/blank columns) -->
+          <div class="col-8">
+            <label>Disclaimers (store as Yes/blank)</label>
+            <div class="row">
+              <label class="row" style="gap:6px;"><input type="checkbox" id="discEero"> eero/Plume Disclaimer</label>
+              <label class="row" style="gap:6px;"><input type="checkbox" id="discFiber"> Fiber Fueled Disclaimer</label>
+              <label class="row" style="gap:6px;"><input type="checkbox" id="discOokla"> Ookla Disclaimer</label>
+            </div>
+          </div>
 
-    <label>Upload Proof</label>
-    <input type="file" id="proof" accept=".png,.pdf,.jpg,.jpeg">
+          <div class="col-6">
+            <label>Short Disclaimer</label>
+            <input type="text" id="shortDisc" placeholder="TBA" value="TBA">
+          </div>
+          <div class="col-6">
+            <label>Long Disclaimer</label>
+            <textarea id="longDisc" rows="2" placeholder="TBA">TBA</textarea>
+          </div>
 
-    <button type="submit">Add Offer</button>
-    <button type="button" id="exportBtn">Export CSV</button>
-  </form>
+          <div class="col-12 hr"></div>
 
-  <table id="offersTable">
-    <thead>
-      <tr>
-        <th>Campaign</th>
-        <th>Offer</th>
-        <th>Gift Card</th>
-        <th>Fiber</th>
-        <th>eero/Plume</th>
-        <th>Ookla</th>
-        <th>Status</th>
-        <th>Proof</th>
-      </tr>
-    </thead>
-    <tbody></tbody>
-  </table>
+          <div class="col-6">
+            <label>Status</label>
+            <select id="status">
+              <option>Not Started</option>
+              <option>In Review</option>
+              <option>Complete</option>
+            </select>
+          </div>
+
+          <div class="col-6">
+            <label>Proof (file name only for tracking)</label>
+            <input type="text" id="proof" placeholder="creative-proof.pdf">
+          </div>
+
+          <div class="col-12 right">
+            <button type="button" class="btn ghost" id="resetFormBtn">Reset</button>
+            <button type="submit" class="btn">Save Offer</button>
+          </div>
+        </div>
+        <input type="hidden" id="editId" value="">
+      </form>
+    </div>
+
+    <!-- ACTIONS -->
+    <div class="card right">
+      <button class="btn secondary" id="exportCsv">Export CSV</button>
+      <button class="btn success" id="exportXlsx">Export XLSX</button>
+      <button class="btn ghost" id="clearAll">Clear All</button>
+    </div>
+
+    <!-- TABLE -->
+    <div class="card" style="overflow:auto;">
+      <table id="offersTable">
+        <thead>
+          <tr>
+            <th>Versions</th>
+            <th>Type</th>
+            <th>Campaign</th>
+            <th>Offer</th>
+            <th>Gift Card</th>
+            <th>Download</th>
+            <th>Upload</th>
+            <th>Promo</th>
+            <th>Term</th>
+            <th>Step-Up Term</th>
+            <th>Step-Up Price</th>
+            <th>Reg Rate</th>
+            <th>Equip</th>
+            <th>Short Disc</th>
+            <th>Long Disc</th>
+            <th>eero/Plume</th>
+            <th>Fiber Fueled</th>
+            <th>Ookla</th>
+            <th>Status</th>
+            <th>Proof</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
 
   <script>
-    const form = document.getElementById('offerForm');
-    const tableBody = document.querySelector('#offersTable tbody');
-    const exportBtn = document.getElementById('exportBtn');
+    /*************** IndexedDB Setup ***************/
+    const DB_NAME = 'sparklight_offers_db';
+    const STORE_NAME = 'offers';
+    let db;
 
-    const offers = [];
+    function openDB() {
+      return new Promise((resolve, reject) => {
+        const req = indexedDB.open(DB_NAME, 1);
+        req.onupgradeneeded = (e) => {
+          const db = e.target.result;
+          if (!db.objectStoreNames.contains(STORE_NAME)) {
+            db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
+          }
+        };
+        req.onsuccess = () => { db = req.result; resolve(); };
+        req.onerror = () => reject(req.error);
+      });
+    }
 
-    form.addEventListener('submit', e => {
-      e.preventDefault();
+    function dbAdd(record) {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        tx.objectStore(STORE_NAME).add(record).onsuccess = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
 
-      const newOffer = {
-        campaign: document.getElementById('campaign').value,
-        offer: document.getElementById('offer').value,
-        giftCard: document.getElementById('giftCard').value,
-        fiber: document.getElementById('fiberFueled').value === 'true' ? '✅' : '❌',
-        eero: document.getElementById('eeroPlume').value === 'true' ? '✅' : '❌',
-        ookla: document.getElementById('ookla').value === 'true' ? '✅' : '❌',
-        status: document.getElementById('status').value,
-        proof: document.getElementById('proof').files[0]?.name || 'Pending'
+    function dbUpdate(record) {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        tx.objectStore(STORE_NAME).put(record).onsuccess = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    function dbDelete(id) {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        tx.objectStore(STORE_NAME).delete(id).onsuccess = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    function dbGetAll() {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, 'readonly');
+        const req = tx.objectStore(STORE_NAME).getAll();
+        req.onsuccess = () => resolve(req.result || []);
+        req.onerror = () => reject(req.error);
+      });
+    }
+
+    function dbClear() {
+      return new Promise((resolve, reject) => {
+        const tx = db.transaction(STORE_NAME, 'readwrite');
+        tx.objectStore(STORE_NAME).clear().onsuccess = () => resolve();
+        tx.onerror = () => reject(tx.error);
+      });
+    }
+
+    /*************** UI Helpers ***************/
+    const qs = (s) => document.querySelector(s);
+    const qsa = (s) => Array.from(document.querySelectorAll(s));
+    const form = qs('#offerForm');
+    const tbody = qs('#offersTable tbody');
+
+    function show(el) { el.classList.remove('hide'); }
+    function hide(el) { el.classList.add('hide'); }
+
+    function formToRecord() {
+      return {
+        id: qs('#editId').value ? Number(qs('#editId').value) : undefined,
+        versions: qs('#versions').value.trim(),
+        type: qs('#type').value,
+        campaign: qs('#campaign').value.trim(),
+        offer: qs('#offer').value.trim(),
+        giftCard: qs('#gcCheck').checked ? (qs('#gcAmt').value.trim() || 'Yes') : '',
+        download: qs('#down').value.trim(),
+        upload: qs('#up').value.trim(),
+        promo: qs('#promo').value.trim(),
+        term: qs('#term').value.trim(),
+        stepUpTerm: qs('#suTermCheck').checked ? qs('#suTerm').value.trim() : '',
+        stepUpPrice: qs('#suPriceCheck').checked ? qs('#suPrice').value.trim() : '',
+        regRate: qs('#reg').value.trim(),
+        equip: qs('#equip').value,
+        shortDisc: qs('#shortDisc').value || 'TBA',
+        longDisc: qs('#longDisc').value || 'TBA',
+        discEero: qs('#discEero').checked ? 'Yes' : '',
+        discFiber: qs('#discFiber').checked ? 'Yes' : '',
+        discOokla: qs('#discOokla').checked ? 'Yes' : '',
+        status: qs('#status').value,
+        proof: qs('#proof').value.trim()
       };
+    }
 
-      offers.push(newOffer);
+    function recordToRow(r) {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${r.versions || ''}</td>
+        <td>${r.type || ''}</td>
+        <td>${r.campaign || ''}</td>
+        <td>${r.offer || ''}</td>
+        <td>${r.giftCard || ''}</td>
+        <td>${r.download || ''}</td>
+        <td>${r.upload || ''}</td>
+        <td>${r.promo || ''}</td>
+        <td>${r.term || ''}</td>
+        <td>${r.stepUpTerm || ''}</td>
+        <td>${r.stepUpPrice || ''}</td>
+        <td>${r.regRate || ''}</td>
+        <td>${r.equip || ''}</td>
+        <td>${r.shortDisc || 'TBA'}</td>
+        <td>${r.longDisc || 'TBA'}</td>
+        <td>${r.discEero || ''}</td>
+        <td>${r.discFiber || ''}</td>
+        <td>${r.discOokla || ''}</td>
+        <td><span class="chip">${r.status || ''}</span></td>
+        <td>${r.proof || ''}</td>
+        <td>
+          <button class="btn ghost" data-edit="${r.id}">Edit</button>
+          <button class="btn danger" data-del="${r.id}">Delete</button>
+        </td>`;
+      return tr;
+    }
 
-      const newRow = document.createElement('tr');
-      newRow.innerHTML = `
-        <td>${newOffer.campaign}</td>
-        <td>${newOffer.offer}</td>
-        <td>${newOffer.giftCard}</td>
-        <td>${newOffer.fiber}</td>
-        <td>${newOffer.eero}</td>
-        <td>${newOffer.ookla}</td>
-        <td class='status'>${newOffer.status}</td>
-        <td>${newOffer.proof}</td>`;
-      tableBody.appendChild(newRow);
+    async function refreshTable() {
+      tbody.innerHTML = '';
+      const rows = await dbGetAll();
+      rows.forEach(r => tbody.appendChild(recordToRow(r)));
+    }
 
+    function resetForm() {
       form.reset();
+      qs('#shortDisc').value = 'TBA';
+      qs('#longDisc').value = 'TBA';
+      qs('#editId').value = '';
+      hide(qs('#gcAmt')); hide(qs('#suTerm')); hide(qs('#suPrice'));
+      qs('#gcCheck').checked = false;
+      qs('#suTermCheck').checked = false;
+      qs('#suPriceCheck').checked = false;
+    }
+
+    /*************** Listeners ***************/
+    // Reveal toggles
+    qs('#gcCheck').addEventListener('change', e => e.target.checked ? show(qs('#gcAmt')) : hide(qs('#gcAmt')));
+    qs('#suTermCheck').addEventListener('change', e => e.target.checked ? show(qs('#suTerm')) : hide(qs('#suTerm')));
+    qs('#suPriceCheck').addEventListener('change', e => e.target.checked ? show(qs('#suPrice')) : hide(qs('#suPrice')));
+
+    qs('#resetFormBtn').addEventListener('click', resetForm);
+
+    // Create / Update
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const rec = formToRecord();
+      if (!rec.campaign) { alert('Campaign is required'); return; }
+
+      if (rec.id) {
+        await dbUpdate(rec);
+      } else {
+        await dbAdd(rec);
+      }
+      resetForm();
+      await refreshTable();
     });
 
-    exportBtn.addEventListener('click', () => {
-      const csvRows = [];
-      const headers = ['Campaign','Offer','Gift Card','Fiber','eero/Plume','Ookla','Status','Proof'];
-      csvRows.push(headers.join(','));
+    // Edit / Delete actions
+    tbody.addEventListener('click', async (e) => {
+      const editId = e.target.getAttribute('data-edit');
+      const delId = e.target.getAttribute('data-del');
+      if (editId) {
+        const all = await dbGetAll();
+        const rec = all.find(r => r.id === Number(editId));
+        if (!rec) return;
+        // populate form
+        qs('#editId').value = rec.id;
+        qs('#versions').value = rec.versions || '';
+        qs('#type').value = rec.type || '';
+        qs('#campaign').value = rec.campaign || '';
+        qs('#offer').value = rec.offer || '';
+        if (rec.giftCard) { qs('#gcCheck').checked = true; show(qs('#gcAmt')); qs('#gcAmt').value = rec.giftCard; } else { qs('#gcCheck').checked = false; hide(qs('#gcAmt')); qs('#gcAmt').value=''; }
+        qs('#down').value = rec.download || '';
+        qs('#up').value = rec.upload || '';
+        qs('#promo').value = rec.promo || '';
+        qs('#term').value = rec.term || '';
+        if (rec.stepUpTerm) { qs('#suTermCheck').checked = true; show(qs('#suTerm')); qs('#suTerm').value = rec.stepUpTerm; } else { qs('#suTermCheck').checked = false; hide(qs('#suTerm')); qs('#suTerm').value=''; }
+        if (rec.stepUpPrice) { qs('#suPriceCheck').checked = true; show(qs('#suPrice')); qs('#suPrice').value = rec.stepUpPrice; } else { qs('#suPriceCheck').checked = false; hide(qs('#suPrice')); qs('#suPrice').value=''; }
+        qs('#reg').value = rec.regRate || '';
+        qs('#equip').value = rec.equip || '';
+        qs('#shortDisc').value = rec.shortDisc || 'TBA';
+        qs('#longDisc').value = rec.longDisc || 'TBA';
+        qs('#discEero').checked = !!rec.discEero;
+        qs('#discFiber').checked = !!rec.discFiber;
+        qs('#discOokla').checked = !!rec.discOokla;
+        qs('#status').value = rec.status || 'Not Started';
+        qs('#proof').value = rec.proof || '';
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+      if (delId) {
+        if (confirm('Delete this record?')) {
+          await dbDelete(Number(delId));
+          await refreshTable();
+        }
+      }
+    });
 
-      offers.forEach(o => {
-        csvRows.push([o.campaign, o.offer, o.giftCard, o.fiber, o.eero, o.ookla, o.status, o.proof].join(','));
-      });
+    // Clear All
+    qs('#clearAll').addEventListener('click', async () => {
+      if (!confirm('Clear ALL records?')) return;
+      await dbClear();
+      await refreshTable();
+    });
 
-      const blob = new Blob([csvRows.join('\\n')], { type: 'text/csv' });
+    // Export CSV
+    qs('#exportCsv').addEventListener('click', async () => {
+      const rows = await dbGetAll();
+      const headers = [
+        'Versions','Type','Campaign','Offer','Gift Card','Download Speed','Upload Speed',
+        'Promo Price','Term','Step-Up Term','Step-Up Price','Reg Rate','Equip Inclu.',
+        'Short Disclaimer','Long Disclaimer','eero/Plume Disclaimer','Fiber Fueled Disclaimer',
+        'Ookla Disclaimer','Status','Proof'
+      ];
+      const csv = [
+        headers.join(','),
+        ...rows.map(r => [
+          r.versions, r.type, r.campaign, r.offer, r.giftCard, r.download, r.upload,
+          r.promo, r.term, r.stepUpTerm, r.stepUpPrice, r.regRate, r.equip,
+          (r.shortDisc || 'TBA').replace(/[\n\r]+/g,' '),
+          (r.longDisc || 'TBA').replace(/[\n\r]+/g,' '),
+          r.discEero, r.discFiber, r.discOokla, r.status, r.proof
+        ].map(v => {
+          const s = (v ?? '').toString();
+          return /[",\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s;
+        }).join(','))
+      ].join('\n');
+
+      const blob = new Blob([csv], { type: 'text/csv' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       a.download = 'offers_export.csv';
       a.click();
     });
+
+    // Export XLSX
+    qs('#exportXlsx').addEventListener('click', async () => {
+      const rows = await dbGetAll();
+      const data = rows.map(r => ({
+        Versions: r.versions, Type: r.type, Campaign: r.campaign, Offer: r.offer,
+        "Gift Card": r.giftCard, "Download Speed": r.download, "Upload Speed": r.upload,
+        "Promo Price": r.promo, Term: r.term, "Step-Up Term": r.stepUpTerm, "Step-Up Price": r.stepUpPrice,
+        "Reg Rate": r.regRate, "Equip Inclu.": r.equip,
+        "Short Disclaimer": r.shortDisc || 'TBA',
+        "Long Disclaimer": r.longDisc || 'TBA',
+        "eero/Plume Disclaimer": r.discEero, "Fiber Fueled Disclaimer": r.discFiber,
+        "Ookla Disclaimer": r.discOokla, Status: r.status, Proof: r.proof
+      }));
+      const ws = XLSX.utils.json_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Offers');
+      XLSX.writeFile(wb, 'offers_export.xlsx');
+    });
+
+    /*************** Boot ***************/
+    (async () => {
+      await openDB();
+      await refreshTable();
+    })();
   </script>
 </body>
 </html>
