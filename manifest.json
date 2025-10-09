@@ -1,0 +1,16 @@
+{
+  "name": "Sparklight Offer Management",
+  "short_name": "OfferMgr",
+  "description": "Internal tool for managing Sparklight Internet offer builds, disclaimers, and campaign data.",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#0284c7",
+  "icons": [
+    {
+      "src": "https://upload.wikimedia.org/wikipedia/commons/2/2b/Sparklight_Logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
