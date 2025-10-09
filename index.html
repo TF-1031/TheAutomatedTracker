@@ -67,20 +67,32 @@
     <div class="card">
       <form id="offerForm">
         <div class="grid">
-          <div class="col-4">
-            <label>Versions</label>
-            <input type="text" id="versions" placeholder="e.g., Core/Enhanced">
+
+          <!-- Core Enhanced -->
+          <div class="col-6">
+            <label>Core Enhanced</label>
+            <select id="coreEnhanced"></select>
+            <div id="coreEnhancedNewWrap" class="hide" style="margin-top:8px;">
+              <input type="text" id="coreEnhancedNew" placeholder="Enter new Core Enhanced value">
+              <div class="row" style="margin-top:6px;">
+                <label class="row" style="gap:6px; color:#dc2626;">
+                  <input type="checkbox" id="coreEnhancedSavePerm">
+                  Save this new Core Enhanced value for future offers.
+                </label>
+              </div>
+            </div>
           </div>
-          <div class="col-4">
-            <label>Type</label>
-            <select id="type">
-              <option value="">—</option>
-              <option>HFC</option>
-              <option>Fiber</option>
-              <option>HFC+Fiber</option>
-            </select>
+
+          <!-- Fiber checkbox replaces Type; sets Type internally and auto Fiber disclaimer -->
+          <div class="col-3">
+            <label>Fiber</label>
+            <div class="row">
+              <input type="checkbox" id="fiberCheck">
+              <span class="hint">Unchecked = HFC</span>
+            </div>
           </div>
-          <div class="col-4">
+
+          <div class="col-3">
             <label>Campaign</label>
             <input type="text" id="campaign" placeholder="e.g., BFCM (11/28–12/5)" required>
           </div>
@@ -148,12 +160,10 @@
             </select>
           </div>
 
-          <!-- Disclaimers (as separate Yes/blank columns) -->
+          <!-- Disclaimers: only eero/Plume and Ookla shown. Fiber is auto from Fiber checkbox -->
           <div class="col-8">
-            <label>Disclaimers (stored as Yes/blank; not merged)</label>
-            <div class="row">
+            <div class="row" style="margin-top:22px;">
               <label class="row" style="gap:6px;"><input type="checkbox" id="discEero"> eero/Plume Disclaimer</label>
-              <label class="row" style="gap:6px;"><input type="checkbox" id="discFiber"> Fiber Fueled Disclaimer</label>
               <label class="row" style="gap:6px;"><input type="checkbox" id="discOokla"> Ookla Disclaimer</label>
             </div>
           </div>
@@ -175,12 +185,12 @@
           <div class="col-12 hr"></div>
 
           <div class="col-6">
-            <label>Short Disclaimer (base, auto-generated or manual)</label>
-            <input type="text" id="shortDisc" placeholder="TBA" value="TBA">
+            <label>Short Disclaimer (base)</label>
+            <input type="text" id="shortDisc" placeholder="Generate" value="Generate">
           </div>
           <div class="col-6">
-            <label>Long Disclaimer (base, auto-generated or manual)</label>
-            <textarea id="longDisc" rows="3" placeholder="TBA">TBA</textarea>
+            <label>Long Disclaimer (base)</label>
+            <textarea id="longDisc" rows="3" placeholder="Generate">Generate</textarea>
           </div>
 
           <div class="col-12 row" style="justify-content:flex-end; gap:8px;">
@@ -189,18 +199,18 @@
 
           <div class="col-12 hr"></div>
 
+          <!-- Status is hidden & always Not Started -->
+          <input type="hidden" id="status" value="Not Started">
+
           <div class="col-6">
-            <label>Status</label>
-            <select id="status">
-              <option>Not Started</option>
-              <option>In Review</option>
-              <option>Complete</option>
-            </select>
+            <label>Automated Tracker</label>
+            <input type="text" id="automatedTracker" readonly>
+            <div class="hint">Auto-filled as Automated_Tracker_(MMDDYY)</div>
           </div>
 
           <div class="col-6">
-            <label>Proof (file name only for tracking)</label>
-            <input type="text" id="proof" placeholder="creative-proof.pdf">
+            <label>Campaign Notes (optional)</label>
+            <input type="text" id="proof" placeholder="">
           </div>
 
           <div class="col-12 right">
@@ -230,7 +240,7 @@
       <table id="offersTable">
         <thead>
           <tr>
-            <th>Versions</th>
+            <th>Core Enhanced</th>
             <th>Type</th>
             <th>Campaign</th>
             <th>Offer</th>
@@ -251,7 +261,8 @@
             <th>Expires</th>
             <th>Unlimited</th>
             <th>Status</th>
-            <th>Proof</th>
+            <th>Automated Tracker</th>
+            <th>Notes</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -292,7 +303,7 @@
 
     function openDB() {
       return new Promise((resolve, reject) => {
-        const req = indexedDB.open(DB_NAME, 2);
+        const req = indexedDB.open(DB_NAME, 3);
         req.onupgradeneeded = (e) => {
           const dbx = e.target.result;
           if (!dbx.objectStoreNames.contains(STORE_NAME)) {
@@ -311,7 +322,6 @@
         tx.onerror = () => reject(tx.error);
       });
     }
-
     function dbUpdate(record) {
       return new Promise((resolve, reject) => {
         const tx = db.transaction(STORE_NAME, 'readwrite');
@@ -319,7 +329,6 @@
         tx.onerror = () => reject(tx.error);
       });
     }
-
     function dbDelete(id) {
       return new Promise((resolve, reject) => {
         const tx = db.transaction(STORE_NAME, 'readwrite');
@@ -327,7 +336,6 @@
         tx.onerror = () => reject(tx.error);
       });
     }
-
     function dbGetAll() {
       return new Promise((resolve, reject) => {
         const tx = db.transaction(STORE_NAME, 'readonly');
@@ -336,13 +344,71 @@
         req.onerror = () => reject(req.error);
       });
     }
-
     function dbClear() {
       return new Promise((resolve, reject) => {
         const tx = db.transaction(STORE_NAME, 'readwrite');
         tx.objectStore(STORE_NAME).clear().onsuccess = () => resolve();
         tx.onerror = () => reject(tx.error);
       });
+    }
+
+    /*************** Core Enhanced Dropdown (with Add New) ***************/
+    const CORE_ENHANCED_DEFAULTS = [
+      "Core_FMAJ",
+      "Core_NoEERO",
+      "Core_Equip",
+      "Core_Max_HHI",
+      "Core_Max_Equip",
+      "Core_Max_Exp",
+      "Core_Max_Equip_Sioux",
+      "Enhanced_Equip",
+      "Enhanced_Max",
+      "Enhanced_Max_Equip",
+      "Edge",
+      "Edge_Equip",
+      "Edge_Max",
+      "Edge_Max_VIC",
+      "Add New"
+    ];
+    const CORE_ENHANCED_LS_KEY = 'coreEnhancedOptions';
+
+    function getCoreEnhancedOptions() {
+      const raw = localStorage.getItem(CORE_ENHANCED_LS_KEY);
+      try {
+        const parsed = raw ? JSON.parse(raw) : null;
+        if (Array.isArray(parsed) && parsed.length) return parsed;
+      } catch {}
+      return [...CORE_ENHANCED_DEFAULTS];
+    }
+    function setCoreEnhancedOptions(opts) {
+      localStorage.setItem(CORE_ENHANCED_LS_KEY, JSON.stringify(opts));
+    }
+    function populateCoreEnhancedSelect(value='') {
+      const sel = document.getElementById('coreEnhanced');
+      const options = getCoreEnhancedOptions();
+      sel.innerHTML = '';
+      options.forEach(v => {
+        const opt = document.createElement('option');
+        opt.value = v;
+        opt.textContent = v;
+        sel.appendChild(opt);
+      });
+      if (value && options.includes(value)) {
+        sel.value = value;
+      } else {
+        sel.value = options[0];
+      }
+      handleCoreEnhancedChange(sel.value);
+    }
+    function handleCoreEnhancedChange(val) {
+      const wrap = document.getElementById('coreEnhancedNewWrap');
+      if (val === 'Add New') {
+        wrap.classList.remove('hide');
+      } else {
+        wrap.classList.add('hide');
+        document.getElementById('coreEnhancedNew').value = '';
+        document.getElementById('coreEnhancedSavePerm').checked = false;
+      }
     }
 
     /*************** Helpers ***************/
@@ -352,21 +418,68 @@
     const hideEl = (el) => el.classList.add('hide');
     const showEl = (el) => el.classList.remove('hide');
 
+    function autoFillAutomatedTracker() {
+      const d = new Date();
+      const mm = String(d.getMonth()+1).padStart(2, '0');
+      const dd = String(d.getDate()).padStart(2, '0');
+      const yy = String(d.getFullYear()).slice(-2);
+      qs('#automatedTracker').value = `Automated_Tracker_(${mm}${dd}${yy})`;
+    }
+
     function resetForm() {
       form.reset();
-      qs('#shortDisc').value = 'TBA';
-      qs('#longDisc').value = 'TBA';
+      // reset Core Enhanced dropdown
+      populateCoreEnhancedSelect();
+      // set defaults
+      qs('#shortDisc').value = 'Generate';
+      qs('#longDisc').value = 'Generate';
       qs('#unlimitedCheck').checked = true;
       qs('#editId').value = '';
+      // toggles
       hideEl(qs('#gcAmt')); hideEl(qs('#suTerm')); hideEl(qs('#suPrice'));
       qs('#gcCheck').checked = false; qs('#suTermCheck').checked = false; qs('#suPriceCheck').checked = false;
+      // Core Enhanced new wrap
+      handleCoreEnhancedChange(qs('#coreEnhanced').value);
+      autoFillAutomatedTracker();
+    }
+
+    function currentType() {
+      return qs('#fiberCheck').checked ? 'Fiber' : 'HFC';
+    }
+    function currentDiscFiber() {
+      return qs('#fiberCheck').checked ? 'Yes' : '';
     }
 
     function formToRecord() {
+      // Resolve Core Enhanced final value
+      let coreEnhancedVal = qs('#coreEnhanced').value;
+      if (coreEnhancedVal === 'Add New') {
+        const custom = qs('#coreEnhancedNew').value.trim();
+        if (custom) coreEnhancedVal = custom;
+      }
+
+      // Save permanently if requested
+      if (qs('#coreEnhanced').value === 'Add New' && qs('#coreEnhancedSavePerm').checked) {
+        const opts = getCoreEnhancedOptions();
+        if (!opts.includes(coreEnhancedVal)) {
+          const idxAddNew = opts.indexOf('Add New');
+          if (idxAddNew >= 0) {
+            opts.splice(idxAddNew, 0, coreEnhancedVal);
+          } else {
+            opts.push(coreEnhancedVal);
+          }
+          setCoreEnhancedOptions(opts);
+          populateCoreEnhancedSelect(coreEnhancedVal);
+        }
+      }
+
+      // Always set Automated Tracker fresh
+      autoFillAutomatedTracker();
+
       return {
         id: qs('#editId').value ? Number(qs('#editId').value) : undefined,
-        versions: qs('#versions').value.trim(),
-        type: qs('#type').value,
+        coreEnhanced: coreEnhancedVal,
+        type: currentType(),
         campaign: qs('#campaign').value.trim(),
         offer: qs('#offer').value.trim(),
         giftCard: qs('#gcCheck').checked ? (qs('#gcAmt').value.trim() || 'Yes') : '',
@@ -378,22 +491,23 @@
         stepUpPrice: qs('#suPriceCheck').checked ? qs('#suPrice').value.trim() : '',
         regRate: qs('#reg').value.trim(),
         equip: qs('#equip').value,
-        shortDisc: qs('#shortDisc').value || 'TBA',
-        longDisc: qs('#longDisc').value || 'TBA',
+        shortDisc: qs('#shortDisc').value || 'Generate',
+        longDisc: qs('#longDisc').value || 'Generate',
         discEero: qs('#discEero').checked ? 'Yes' : '',
-        discFiber: qs('#discFiber').checked ? 'Yes' : '',
+        discFiber: currentDiscFiber(), // auto from Fiber checkbox
         discOokla: qs('#discOokla').checked ? 'Yes' : '',
         expires: qs('#expires').value, // yyyy-mm-dd or ''
         unlimited: qs('#unlimitedCheck').checked ? 'Yes' : '',
-        status: qs('#status').value,
-        proof: qs('#proof').value.trim()
+        status: 'Not Started',
+        automatedTracker: qs('#automatedTracker').value,
+        notes: qs('#proof').value.trim()
       };
     }
 
     function recordToRow(r) {
       const tr = document.createElement('tr');
       tr.innerHTML = `
-        <td>${r.versions || ''}</td>
+        <td>${r.coreEnhanced || ''}</td>
         <td>${r.type || ''}</td>
         <td>${r.campaign || ''}</td>
         <td>${r.offer || ''}</td>
@@ -406,15 +520,16 @@
         <td>${r.stepUpPrice || ''}</td>
         <td>${r.regRate || ''}</td>
         <td>${r.equip || ''}</td>
-        <td>${r.shortDisc || 'TBA'}</td>
-        <td>${r.longDisc || 'TBA'}</td>
+        <td>${r.shortDisc || 'Generate'}</td>
+        <td>${r.longDisc || 'Generate'}</td>
         <td>${r.discEero || ''}</td>
         <td>${r.discFiber || ''}</td>
         <td>${r.discOokla || ''}</td>
         <td>${r.expires || ''}</td>
         <td>${r.unlimited || ''}</td>
         <td><span class="chip">${r.status || ''}</span></td>
-        <td>${r.proof || ''}</td>
+        <td>${r.automatedTracker || ''}</td>
+        <td>${r.notes || ''}</td>
         <td>
           <button class="btn ghost" data-edit="${r.id}">Edit</button>
           <button class="btn danger" data-del="${r.id}">Delete</button>
@@ -428,41 +543,45 @@
       rows.forEach(r => tbody.appendChild(recordToRow(r)));
     }
 
-    /*************** Listeners: Toggles ***************/
+    /*************** Listeners: UI Toggles ***************/
     qs('#gcCheck').addEventListener('change', e => e.target.checked ? showEl(qs('#gcAmt')) : hideEl(qs('#gcAmt')));
     qs('#suTermCheck').addEventListener('change', e => e.target.checked ? showEl(qs('#suTerm')) : hideEl(qs('#suTerm')));
     qs('#suPriceCheck').addEventListener('change', e => e.target.checked ? showEl(qs('#suPrice')) : hideEl(qs('#suPrice')));
+
     qs('#resetFormBtn').addEventListener('click', resetForm);
 
+    document.getElementById('coreEnhanced').addEventListener('change', (e) => {
+      handleCoreEnhancedChange(e.target.value);
+    });
+
     /*************** Create / Update ***************/
-  form.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const rec = formToRecord();
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const rec = formToRecord();
 
-  if (!rec.campaign) {
-    alert('Campaign is required');
-    return;
-  }
+      if (!rec.campaign) {
+        alert('Campaign is required');
+        return;
+      }
 
-  try {
-    // ✅ Ensure the ID is valid for IndexedDB
-    if (rec.id && !isNaN(rec.id)) {
-      await dbUpdate(rec);
-      console.log(`✅ Offer updated (ID ${rec.id})`);
-    } else {
-      delete rec.id; // Let IndexedDB auto-generate the key
-      await dbAdd(rec);
-      console.log('✅ New offer added to IndexedDB');
-    }
+      try {
+        if (rec.id && !isNaN(rec.id)) {
+          await dbUpdate(rec);
+          console.log(`✅ Offer updated (ID ${rec.id})`);
+        } else {
+          delete rec.id; // Let IndexedDB auto-generate the key
+          await dbAdd(rec);
+          console.log('✅ New offer added to IndexedDB');
+        }
 
-    resetForm();
-    await refreshTable();
+        resetForm();
+        await refreshTable();
 
-  } catch (err) {
-    console.error('❌ Save failed:', err);
-    alert('Something went wrong while saving this record. Please try again.');
-  }
-});
+      } catch (err) {
+        console.error('❌ Save failed:', err);
+        alert('Something went wrong while saving this record. Please try again.');
+      }
+    });
 
     /*************** Table Actions ***************/
     tbody.addEventListener('click', async (e) => {
@@ -474,8 +593,14 @@
         if (!rec) return;
         // populate form
         qs('#editId').value = rec.id;
-        qs('#versions').value = rec.versions || '';
-        qs('#type').value = rec.type || '';
+        populateCoreEnhancedSelect(rec.coreEnhanced || '');
+        if (rec.coreEnhanced && !getCoreEnhancedOptions().includes(rec.coreEnhanced)) {
+          // show new wrap pre-filled (not permanent unless checked and saved)
+          document.getElementById('coreEnhanced').value = 'Add New';
+          handleCoreEnhancedChange('Add New');
+          document.getElementById('coreEnhancedNew').value = rec.coreEnhanced;
+        }
+        qs('#fiberCheck').checked = (rec.type === 'Fiber');
         qs('#campaign').value = rec.campaign || '';
         qs('#offer').value = rec.offer || '';
         if (rec.giftCard) { qs('#gcCheck').checked = true; showEl(qs('#gcAmt')); qs('#gcAmt').value = rec.giftCard; } else { qs('#gcCheck').checked = false; hideEl(qs('#gcAmt')); qs('#gcAmt').value=''; }
@@ -487,15 +612,14 @@
         if (rec.stepUpPrice) { qs('#suPriceCheck').checked = true; showEl(qs('#suPrice')); qs('#suPrice').value = rec.stepUpPrice; } else { qs('#suPriceCheck').checked = false; hideEl(qs('#suPrice')); qs('#suPrice').value=''; }
         qs('#reg').value = rec.regRate || '';
         qs('#equip').value = rec.equip || '';
-        qs('#shortDisc').value = rec.shortDisc || 'TBA';
-        qs('#longDisc').value = rec.longDisc || 'TBA';
+        qs('#shortDisc').value = rec.shortDisc || 'Generate';
+        qs('#longDisc').value = rec.longDisc || 'Generate';
         qs('#discEero').checked = !!rec.discEero;
-        qs('#discFiber').checked = !!rec.discFiber;
         qs('#discOokla').checked = !!rec.discOokla;
         qs('#expires').value = rec.expires || '';
         qs('#unlimitedCheck').checked = rec.unlimited === 'Yes';
-        qs('#status').value = rec.status || 'Not Started';
-        qs('#proof').value = rec.proof || '';
+        qs('#automatedTracker').value = rec.automatedTracker || '';
+        qs('#proof').value = rec.notes || '';
         window.scrollTo({ top: 0, behavior: 'smooth' });
       }
       if (delId) {
@@ -508,25 +632,25 @@
 
     /*************** Export ***************/
     const HEADERS = [
-      'Versions','Type','Campaign','Offer','Gift Card','Download Speed','Upload Speed',
+      'Core Enhanced','Type','Campaign','Offer','Gift Card','Download Speed','Upload Speed',
       'Promo Price','Term','Step-Up Term','Step-Up Price','Reg Rate','Equip Inclu.',
       'Short Disclaimer','Long Disclaimer',
       'eero/Plume Disclaimer','Fiber Fueled Disclaimer','Ookla Disclaimer',
-      'Offer Expiration','Unlimited Data','Status','Proof'
+      'Offer Expiration','Unlimited Data','Status','Automated Tracker','Notes'
     ];
 
     async function getAllAsRows() {
       const rows = await dbGetAll();
       return rows.map(r => ({
-        "Versions": r.versions, "Type": r.type, "Campaign": r.campaign, "Offer": r.offer,
+        "Core Enhanced": r.coreEnhanced, "Type": r.type, "Campaign": r.campaign, "Offer": r.offer,
         "Gift Card": r.giftCard, "Download Speed": r.download, "Upload Speed": r.upload,
         "Promo Price": r.promo, "Term": r.term, "Step-Up Term": r.stepUpTerm, "Step-Up Price": r.stepUpPrice,
         "Reg Rate": r.regRate, "Equip Inclu.": r.equip,
-        "Short Disclaimer": r.shortDisc || 'TBA',
-        "Long Disclaimer": r.longDisc || 'TBA',
+        "Short Disclaimer": r.shortDisc || 'Generate',
+        "Long Disclaimer": r.longDisc || 'Generate',
         "eero/Plume Disclaimer": r.discEero, "Fiber Fueled Disclaimer": r.discFiber, "Ookla Disclaimer": r.discOokla,
         "Offer Expiration": r.expires || '', "Unlimited Data": r.unlimited || '',
-        "Status": r.status, "Proof": r.proof
+        "Status": r.status, "Automated Tracker": r.automatedTracker, "Notes": r.notes
       }));
     }
 
@@ -625,10 +749,10 @@
       await importRows(rows);
     }
 
-    async function importRows(jsonRows) {
-      for (const obj of jsonRows) {
+    async function importRows(objRows) {
+      for (const obj of objRows) {
         const rec = {
-          versions: obj['Versions'] || '',
+          coreEnhanced: obj['Core Enhanced'] || '',
           type: obj['Type'] || '',
           campaign: obj['Campaign'] || '',
           offer: obj['Offer'] || '',
@@ -641,15 +765,16 @@
           stepUpPrice: obj['Step-Up Price'] || '',
           regRate: obj['Reg Rate'] || '',
           equip: obj['Equip Inclu.'] || '',
-          shortDisc: obj['Short Disclaimer'] || 'TBA',
-          longDisc: obj['Long Disclaimer'] || 'TBA',
+          shortDisc: obj['Short Disclaimer'] || 'Generate',
+          longDisc: obj['Long Disclaimer'] || 'Generate',
           discEero: obj['eero/Plume Disclaimer'] || '',
           discFiber: obj['Fiber Fueled Disclaimer'] || '',
           discOokla: obj['Ookla Disclaimer'] || '',
           expires: obj['Offer Expiration'] || '',
           unlimited: obj['Unlimited Data'] || '',
           status: obj['Status'] || 'Not Started',
-          proof: obj['Proof'] || ''
+          automatedTracker: obj['Automated Tracker'] || '',
+          notes: obj['Notes'] || ''
         };
         await dbAdd(rec);
       }
@@ -672,19 +797,10 @@
     qs('#modalClose').addEventListener('click', modalClose);
     qs('#modalCancel').addEventListener('click', modalClose);
 
-    // Utility to wrap dynamic parts
+    // Utility to wrap dynamic parts (red)
     const H = (txt) => `<span class="hilite">${txt || ''}</span>`;
-    const plain = (html) => {
-      const div = document.createElement('div'); div.innerHTML = html; return div.textContent || div.innerText || '';
-    };
-    // Normalize money spacing
+    const plain = (html) => { const d=document.createElement('div'); d.innerHTML=html; return d.textContent || d.innerText || ''; };
     const cleanMoney = (s) => (s || '').replace(/\s+/g,'').replace(/^\$/, '$');
-
-    function buildBaseShortDisclaimer({ isFiber }) {
-      // BASE ONLY — No fiber dagger, no eero, no Ookla, no gift card.
-      return `Auto Pay and Paperless Billing required. Equipment, taxes, surcharges and fees are not included. Restrictions apply; see disclaimer for details.`;
-    }
-
     function formatDate(yyyy_mm_dd) {
       if (!yyyy_mm_dd) return '';
       const [y,m,d] = yyyy_mm_dd.split('-').map(n=>parseInt(n,10));
@@ -693,8 +809,11 @@
       return dt.toLocaleDateString(undefined, opts);
     }
 
+    function buildBaseShortDisclaimer() {
+      return `Auto Pay and Paperless Billing required. Equipment, taxes, surcharges and fees are not included. Restrictions apply; see disclaimer for details.`;
+    }
+
     function buildBaseLongDisclaimer(model) {
-      // BASE ONLY — No gift card block; no eero trademark; no Ookla.
       const {
         download, upload, promo, term, stepUpPrice, stepUpTerm,
         regRate, expires, unlimited
@@ -702,7 +821,6 @@
 
       const parts = [];
 
-      // Lead sentence (with highlights)
       let lead = `Promotional rate for ${H(download)} download x ${H(upload)} upload Internet service is ${H(cleanMoney(promo))}/mo. for the first ${H(term)} months`;
       if (stepUpPrice && stepUpTerm) {
         lead += `, then ${H(cleanMoney(stepUpPrice))}/mo. for months ${H(stepUpTerm)}`;
@@ -710,22 +828,18 @@
       lead += ` and requires Auto Pay with checking/savings account or debit card plus paperless billing.`;
       parts.push(lead);
 
-      // Regular rate
       if (regRate) {
         parts.push(`Regular rates from ${H(regRate)}/mo. and are subject to change at any time.`);
       }
 
-      // Expiration (optional)
       if (expires) {
         parts.push(`Offer expires ${H(formatDate(expires))}.`);
       }
 
-      // Unlimited Data (optional; default on)
       if (unlimited) {
         parts.push(`Includes Unlimited data plan.`);
       }
 
-      // AUP + general fees (base boilerplate)
       parts.push(`Visit www.sparklight.com/legal/internet-aup for details of Sparklight’s Acceptable Use Policy.`);
       parts.push(`Equipment, taxes, surcharges, and fees are not included.`);
       parts.push(`All services are not available in all areas. Offer available to new customers only. Restrictions apply. Call for details.`);
@@ -746,14 +860,12 @@
         unlimited: qs('#unlimitedCheck').checked ? 'Yes' : ''
       };
 
-      // Build previews
-      const previewShort = buildBaseShortDisclaimer({});
+      const previewShort = buildBaseShortDisclaimer();
       const previewLong = buildBaseLongDisclaimer(model);
 
       PREV_SHORT.innerHTML = previewShort;
       PREV_LONG.innerHTML = previewLong;
 
-      // Stash plain versions to apply
       PREV_SHORT.dataset.plain = plain(previewShort);
       PREV_LONG.dataset.plain = plain(previewLong);
 
@@ -761,8 +873,8 @@
     });
 
     qs('#modalApply').addEventListener('click', () => {
-      const s = PREV_SHORT.dataset.plain || 'TBA';
-      const l = PREV_LONG.dataset.plain || 'TBA';
+      const s = PREV_SHORT.dataset.plain || 'Generate';
+      const l = PREV_LONG.dataset.plain || 'Generate';
       qs('#shortDisc').value = s;
       qs('#longDisc').value = l;
       modalClose();
@@ -771,6 +883,8 @@
     /*************** Boot ***************/
     (async () => {
       await openDB();
+      populateCoreEnhancedSelect();
+      resetForm();
       await refreshTable();
     })();
   </script>
