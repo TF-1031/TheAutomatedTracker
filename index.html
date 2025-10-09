@@ -435,14 +435,32 @@
     qs('#resetFormBtn').addEventListener('click', resetForm);
 
     /*************** Create / Update ***************/
-    form.addEventListener('submit', async (e) => {
-      e.preventDefault();
-      const rec = formToRecord();
-      if (!rec.campaign) { alert('Campaign is required'); return; }
-      if (rec.id) await dbUpdate(rec); else await dbAdd(rec);
-      resetForm();
-      await refreshTable();
-    });
+   form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const rec = formToRecord();
+
+  if (!rec.campaign) {
+    alert('Campaign is required');
+    return;
+  }
+
+  try {
+    // ✅ Ensure ID is handled correctly for IndexedDB
+    if (rec.id && !isNaN(rec.id)) {
+      await dbUpdate(rec);
+    } else {
+      delete rec.id; // Let IndexedDB auto-assign key
+      await dbAdd(rec);
+    }
+
+    resetForm();
+    await refreshTable();
+
+  } catch (err) {
+    console.error('Save failed:', err);
+    alert('Something went wrong while saving this record. Please try again.');
+  }
+});
 
     /*************** Table Actions ***************/
     tbody.addEventListener('click', async (e) => {
