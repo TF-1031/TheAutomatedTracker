@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Sparklight Offer Management</title>
 
-  <!-- SheetJS for XLSX export -->
+  <!-- SheetJS for XLSX import/export -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <style>
@@ -13,38 +13,50 @@
       --bg: #f8fafc;
       --card: #ffffff;
       --ink: #0f172a;
-      --muted: #334155;
+      --muted: #475569;
       --brand: #0284c7;
       --brand-dark: #0369a1;
       --line: #e2e8f0;
       --good: #16a34a;
       --bad: #dc2626;
+      --accent: #d32f2f;
     }
     * { box-sizing: border-box; }
-    body { margin: 0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji"; background: var(--bg); color: var(--ink); }
-    .wrap { max-width: 1100px; margin: 32px auto; padding: 0 16px; }
-    h1 { margin: 0 0 16px; color: var(--brand-dark); font-weight: 800; letter-spacing: -0.02em; }
-    .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 6px 20px rgba(2,8,23,.05); padding: 20px; margin-bottom: 20px; }
+    body { margin: 0; font-family: ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; background: var(--bg); color: var(--ink); }
+    .wrap { max-width: 1150px; margin: 32px auto; padding: 0 16px; }
+    h1 { margin: 0 0 12px; color: var(--brand-dark); font-weight: 800; letter-spacing: -0.02em; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 6px 20px rgba(2,8,23,.05); padding: 20px; margin-bottom: 18px; }
     .grid { display: grid; gap: 14px; grid-template-columns: repeat(12, 1fr); }
-    .col-6 { grid-column: span 6; } .col-4 { grid-column: span 4; } .col-3 { grid-column: span 3; } .col-12 { grid-column: span 12; }
+    .col-3 { grid-column: span 3; } .col-4 { grid-column: span 4; } .col-6 { grid-column: span 6; } .col-8 { grid-column: span 8; } .col-12 { grid-column: span 12; }
     label { font-size: 12px; text-transform: uppercase; color: var(--muted); letter-spacing: .06em; display: block; margin-bottom: 4px; }
-    input[type="text"], input[type="number"], select, textarea {
+    input[type="text"], input[type="date"], input[type="number"], select, textarea {
       width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; font-size: 14px; background: #fff;
     }
-    .row { display: flex; align-items: center; gap: 10px; }
+    .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
     .hint { font-size: 12px; color: var(--muted); }
     .btn { appearance: none; border: none; background: var(--brand); color: #fff; font-weight: 700; padding: 10px 14px; border-radius: 10px; cursor: pointer; }
     .btn:hover { background: var(--brand-dark); }
     .btn.secondary { background: #0ea5e9; } .btn.secondary:hover{ background:#0284c7; }
     .btn.ghost { background: transparent; color: var(--brand-dark); border: 1px solid var(--line); }
     .btn.danger { background: var(--bad); } .btn.success { background: var(--good); }
-    table { width: 100%; border-collapse: collapse; border: 1px solid var(--line); overflow: hidden; border-radius: 12px; }
+    table { width: 100%; border-collapse: collapse; border: 1px solid var(--line); overflow: auto; border-radius: 12px; }
     th, td { border-bottom: 1px solid var(--line); padding: 10px 12px; text-align: left; font-size: 14px; vertical-align: top; }
     thead th { background: #e0f2fe; position: sticky; top: 0; z-index: 1; }
     .chip { padding: 2px 8px; border-radius: 999px; font-size: 12px; border: 1px solid var(--line); display: inline-block; }
-    .right { display:flex; gap:10px; justify-content:flex-end; }
+    .right { display:flex; gap:10px; justify-content:flex-end; flex-wrap: wrap; }
     .hide { display: none; }
     .hr { height:1px; background:var(--line); margin:10px 0 2px; }
+
+    /* Modal */
+    .modal-backdrop { position: fixed; inset: 0; background: rgba(2,8,23,.44); display: none; align-items: center; justify-content: center; padding: 16px; z-index: 1000; }
+    .modal { max-width: 900px; width: 100%; background: #fff; border-radius: 14px; box-shadow: 0 20px 50px rgba(2,8,23,.25); }
+    .modal header { padding: 14px 16px; border-bottom: 1px solid var(--line); display:flex; justify-content: space-between; align-items:center; }
+    .modal header h3 { margin:0; font-size: 18px; }
+    .modal .content { padding: 16px; display: grid; gap: 16px; grid-template-columns: 1fr 1fr; }
+    .modal .section { border:1px solid var(--line); border-radius: 10px; padding: 12px; }
+    .modal footer { padding: 14px 16px; border-top: 1px solid var(--line); display:flex; justify-content:flex-end; gap: 10px; }
+    .hilite { color: var(--accent); font-weight: 700; }
+    .x { cursor:pointer; color:#64748b; }
   </style>
 </head>
 <body>
@@ -138,7 +150,7 @@
 
           <!-- Disclaimers (as separate Yes/blank columns) -->
           <div class="col-8">
-            <label>Disclaimers (store as Yes/blank)</label>
+            <label>Disclaimers (stored as Yes/blank; not merged)</label>
             <div class="row">
               <label class="row" style="gap:6px;"><input type="checkbox" id="discEero"> eero/Plume Disclaimer</label>
               <label class="row" style="gap:6px;"><input type="checkbox" id="discFiber"> Fiber Fueled Disclaimer</label>
@@ -146,13 +158,33 @@
             </div>
           </div>
 
+          <!-- Expiration + Unlimited Data -->
+          <div class="col-4">
+            <label>Offer Expiration</label>
+            <input type="date" id="expires">
+            <div class="hint">Optional; leave blank to omit.</div>
+          </div>
+          <div class="col-4">
+            <label>Unlimited Data</label>
+            <div class="row">
+              <input type="checkbox" id="unlimitedCheck" checked>
+              <span class="hint">Checked = include “Includes Unlimited data plan.”</span>
+            </div>
+          </div>
+
+          <div class="col-12 hr"></div>
+
           <div class="col-6">
-            <label>Short Disclaimer</label>
+            <label>Short Disclaimer (base, auto-generated or manual)</label>
             <input type="text" id="shortDisc" placeholder="TBA" value="TBA">
           </div>
           <div class="col-6">
-            <label>Long Disclaimer</label>
-            <textarea id="longDisc" rows="2" placeholder="TBA">TBA</textarea>
+            <label>Long Disclaimer (base, auto-generated or manual)</label>
+            <textarea id="longDisc" rows="3" placeholder="TBA">TBA</textarea>
+          </div>
+
+          <div class="col-12 row" style="justify-content:flex-end; gap:8px;">
+            <button type="button" class="btn ghost" id="genBaseBtn">🪄 Generate Base Disclaimers</button>
           </div>
 
           <div class="col-12 hr"></div>
@@ -182,6 +214,12 @@
 
     <!-- ACTIONS -->
     <div class="card right">
+      <button class="btn secondary" id="downloadTemplateXlsx">Download Template (XLSX)</button>
+      <button class="btn secondary" id="downloadTemplateCsv">Download Template (CSV)</button>
+
+      <input type="file" id="importFile" accept=".csv,.xlsx,.xls" class="hide">
+      <button class="btn" id="importBtn">Import Data</button>
+
       <button class="btn secondary" id="exportCsv">Export CSV</button>
       <button class="btn success" id="exportXlsx">Export XLSX</button>
       <button class="btn ghost" id="clearAll">Clear All</button>
@@ -210,6 +248,8 @@
             <th>eero/Plume</th>
             <th>Fiber Fueled</th>
             <th>Ookla</th>
+            <th>Expires</th>
+            <th>Unlimited</th>
             <th>Status</th>
             <th>Proof</th>
             <th>Actions</th>
@@ -217,6 +257,30 @@
         </thead>
         <tbody></tbody>
       </table>
+    </div>
+  </div>
+
+  <!-- MODAL -->
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <header>
+        <h3 id="modalTitle">Preview Base Disclaimers</h3>
+        <span class="x" id="modalClose">✕</span>
+      </header>
+      <div class="content">
+        <div class="section">
+          <strong>Short Disclaimer</strong>
+          <div id="previewShort" style="margin-top:8px; line-height:1.4;"></div>
+        </div>
+        <div class="section">
+          <strong>Long Disclaimer</strong>
+          <div id="previewLong" style="margin-top:8px; line-height:1.4; white-space:pre-wrap;"></div>
+        </div>
+      </div>
+      <footer>
+        <button class="btn ghost" id="modalCancel">Cancel</button>
+        <button class="btn success" id="modalApply">Apply to Offer</button>
+      </footer>
     </div>
   </div>
 
@@ -228,11 +292,11 @@
 
     function openDB() {
       return new Promise((resolve, reject) => {
-        const req = indexedDB.open(DB_NAME, 1);
+        const req = indexedDB.open(DB_NAME, 2);
         req.onupgradeneeded = (e) => {
-          const db = e.target.result;
-          if (!db.objectStoreNames.contains(STORE_NAME)) {
-            db.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
+          const dbx = e.target.result;
+          if (!dbx.objectStoreNames.contains(STORE_NAME)) {
+            dbx.createObjectStore(STORE_NAME, { keyPath: 'id', autoIncrement: true });
           }
         };
         req.onsuccess = () => { db = req.result; resolve(); };
@@ -281,14 +345,22 @@
       });
     }
 
-    /*************** UI Helpers ***************/
+    /*************** Helpers ***************/
     const qs = (s) => document.querySelector(s);
-    const qsa = (s) => Array.from(document.querySelectorAll(s));
-    const form = qs('#offerForm');
     const tbody = qs('#offersTable tbody');
+    const form = qs('#offerForm');
+    const hideEl = (el) => el.classList.add('hide');
+    const showEl = (el) => el.classList.remove('hide');
 
-    function show(el) { el.classList.remove('hide'); }
-    function hide(el) { el.classList.add('hide'); }
+    function resetForm() {
+      form.reset();
+      qs('#shortDisc').value = 'TBA';
+      qs('#longDisc').value = 'TBA';
+      qs('#unlimitedCheck').checked = true;
+      qs('#editId').value = '';
+      hideEl(qs('#gcAmt')); hideEl(qs('#suTerm')); hideEl(qs('#suPrice'));
+      qs('#gcCheck').checked = false; qs('#suTermCheck').checked = false; qs('#suPriceCheck').checked = false;
+    }
 
     function formToRecord() {
       return {
@@ -311,6 +383,8 @@
         discEero: qs('#discEero').checked ? 'Yes' : '',
         discFiber: qs('#discFiber').checked ? 'Yes' : '',
         discOokla: qs('#discOokla').checked ? 'Yes' : '',
+        expires: qs('#expires').value, // yyyy-mm-dd or ''
+        unlimited: qs('#unlimitedCheck').checked ? 'Yes' : '',
         status: qs('#status').value,
         proof: qs('#proof').value.trim()
       };
@@ -337,6 +411,8 @@
         <td>${r.discEero || ''}</td>
         <td>${r.discFiber || ''}</td>
         <td>${r.discOokla || ''}</td>
+        <td>${r.expires || ''}</td>
+        <td>${r.unlimited || ''}</td>
         <td><span class="chip">${r.status || ''}</span></td>
         <td>${r.proof || ''}</td>
         <td>
@@ -352,41 +428,23 @@
       rows.forEach(r => tbody.appendChild(recordToRow(r)));
     }
 
-    function resetForm() {
-      form.reset();
-      qs('#shortDisc').value = 'TBA';
-      qs('#longDisc').value = 'TBA';
-      qs('#editId').value = '';
-      hide(qs('#gcAmt')); hide(qs('#suTerm')); hide(qs('#suPrice'));
-      qs('#gcCheck').checked = false;
-      qs('#suTermCheck').checked = false;
-      qs('#suPriceCheck').checked = false;
-    }
-
-    /*************** Listeners ***************/
-    // Reveal toggles
-    qs('#gcCheck').addEventListener('change', e => e.target.checked ? show(qs('#gcAmt')) : hide(qs('#gcAmt')));
-    qs('#suTermCheck').addEventListener('change', e => e.target.checked ? show(qs('#suTerm')) : hide(qs('#suTerm')));
-    qs('#suPriceCheck').addEventListener('change', e => e.target.checked ? show(qs('#suPrice')) : hide(qs('#suPrice')));
-
+    /*************** Listeners: Toggles ***************/
+    qs('#gcCheck').addEventListener('change', e => e.target.checked ? showEl(qs('#gcAmt')) : hideEl(qs('#gcAmt')));
+    qs('#suTermCheck').addEventListener('change', e => e.target.checked ? showEl(qs('#suTerm')) : hideEl(qs('#suTerm')));
+    qs('#suPriceCheck').addEventListener('change', e => e.target.checked ? showEl(qs('#suPrice')) : hideEl(qs('#suPrice')));
     qs('#resetFormBtn').addEventListener('click', resetForm);
 
-    // Create / Update
+    /*************** Create / Update ***************/
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
       const rec = formToRecord();
       if (!rec.campaign) { alert('Campaign is required'); return; }
-
-      if (rec.id) {
-        await dbUpdate(rec);
-      } else {
-        await dbAdd(rec);
-      }
+      if (rec.id) await dbUpdate(rec); else await dbAdd(rec);
       resetForm();
       await refreshTable();
     });
 
-    // Edit / Delete actions
+    /*************** Table Actions ***************/
     tbody.addEventListener('click', async (e) => {
       const editId = e.target.getAttribute('data-edit');
       const delId = e.target.getAttribute('data-del');
@@ -400,13 +458,13 @@
         qs('#type').value = rec.type || '';
         qs('#campaign').value = rec.campaign || '';
         qs('#offer').value = rec.offer || '';
-        if (rec.giftCard) { qs('#gcCheck').checked = true; show(qs('#gcAmt')); qs('#gcAmt').value = rec.giftCard; } else { qs('#gcCheck').checked = false; hide(qs('#gcAmt')); qs('#gcAmt').value=''; }
+        if (rec.giftCard) { qs('#gcCheck').checked = true; showEl(qs('#gcAmt')); qs('#gcAmt').value = rec.giftCard; } else { qs('#gcCheck').checked = false; hideEl(qs('#gcAmt')); qs('#gcAmt').value=''; }
         qs('#down').value = rec.download || '';
         qs('#up').value = rec.upload || '';
         qs('#promo').value = rec.promo || '';
         qs('#term').value = rec.term || '';
-        if (rec.stepUpTerm) { qs('#suTermCheck').checked = true; show(qs('#suTerm')); qs('#suTerm').value = rec.stepUpTerm; } else { qs('#suTermCheck').checked = false; hide(qs('#suTerm')); qs('#suTerm').value=''; }
-        if (rec.stepUpPrice) { qs('#suPriceCheck').checked = true; show(qs('#suPrice')); qs('#suPrice').value = rec.stepUpPrice; } else { qs('#suPriceCheck').checked = false; hide(qs('#suPrice')); qs('#suPrice').value=''; }
+        if (rec.stepUpTerm) { qs('#suTermCheck').checked = true; showEl(qs('#suTerm')); qs('#suTerm').value = rec.stepUpTerm; } else { qs('#suTermCheck').checked = false; hideEl(qs('#suTerm')); qs('#suTerm').value=''; }
+        if (rec.stepUpPrice) { qs('#suPriceCheck').checked = true; showEl(qs('#suPrice')); qs('#suPrice').value = rec.stepUpPrice; } else { qs('#suPriceCheck').checked = false; hideEl(qs('#suPrice')); qs('#suPrice').value=''; }
         qs('#reg').value = rec.regRate || '';
         qs('#equip').value = rec.equip || '';
         qs('#shortDisc').value = rec.shortDisc || 'TBA';
@@ -414,6 +472,8 @@
         qs('#discEero').checked = !!rec.discEero;
         qs('#discFiber').checked = !!rec.discFiber;
         qs('#discOokla').checked = !!rec.discOokla;
+        qs('#expires').value = rec.expires || '';
+        qs('#unlimitedCheck').checked = rec.unlimited === 'Yes';
         qs('#status').value = rec.status || 'Not Started';
         qs('#proof').value = rec.proof || '';
         window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -426,33 +486,37 @@
       }
     });
 
-    // Clear All
-    qs('#clearAll').addEventListener('click', async () => {
-      if (!confirm('Clear ALL records?')) return;
-      await dbClear();
-      await refreshTable();
-    });
+    /*************** Export ***************/
+    const HEADERS = [
+      'Versions','Type','Campaign','Offer','Gift Card','Download Speed','Upload Speed',
+      'Promo Price','Term','Step-Up Term','Step-Up Price','Reg Rate','Equip Inclu.',
+      'Short Disclaimer','Long Disclaimer',
+      'eero/Plume Disclaimer','Fiber Fueled Disclaimer','Ookla Disclaimer',
+      'Offer Expiration','Unlimited Data','Status','Proof'
+    ];
 
-    // Export CSV
-    qs('#exportCsv').addEventListener('click', async () => {
+    async function getAllAsRows() {
       const rows = await dbGetAll();
-      const headers = [
-        'Versions','Type','Campaign','Offer','Gift Card','Download Speed','Upload Speed',
-        'Promo Price','Term','Step-Up Term','Step-Up Price','Reg Rate','Equip Inclu.',
-        'Short Disclaimer','Long Disclaimer','eero/Plume Disclaimer','Fiber Fueled Disclaimer',
-        'Ookla Disclaimer','Status','Proof'
-      ];
+      return rows.map(r => ({
+        "Versions": r.versions, "Type": r.type, "Campaign": r.campaign, "Offer": r.offer,
+        "Gift Card": r.giftCard, "Download Speed": r.download, "Upload Speed": r.upload,
+        "Promo Price": r.promo, "Term": r.term, "Step-Up Term": r.stepUpTerm, "Step-Up Price": r.stepUpPrice,
+        "Reg Rate": r.regRate, "Equip Inclu.": r.equip,
+        "Short Disclaimer": r.shortDisc || 'TBA',
+        "Long Disclaimer": r.longDisc || 'TBA',
+        "eero/Plume Disclaimer": r.discEero, "Fiber Fueled Disclaimer": r.discFiber, "Ookla Disclaimer": r.discOokla,
+        "Offer Expiration": r.expires || '', "Unlimited Data": r.unlimited || '',
+        "Status": r.status, "Proof": r.proof
+      }));
+    }
+
+    qs('#exportCsv').addEventListener('click', async () => {
+      const rows = await getAllAsRows();
       const csv = [
-        headers.join(','),
-        ...rows.map(r => [
-          r.versions, r.type, r.campaign, r.offer, r.giftCard, r.download, r.upload,
-          r.promo, r.term, r.stepUpTerm, r.stepUpPrice, r.regRate, r.equip,
-          (r.shortDisc || 'TBA').replace(/[\n\r]+/g,' '),
-          (r.longDisc || 'TBA').replace(/[\n\r]+/g,' '),
-          r.discEero, r.discFiber, r.discOokla, r.status, r.proof
-        ].map(v => {
-          const s = (v ?? '').toString();
-          return /[",\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s;
+        HEADERS.join(','),
+        ...rows.map(obj => HEADERS.map(h => {
+          const v = (obj[h] ?? '').toString().replace(/\r?\n/g, ' ');
+          return /[",\n]/.test(v) ? `"${v.replace(/"/g,'""')}"` : v;
         }).join(','))
       ].join('\n');
 
@@ -463,23 +527,225 @@
       a.click();
     });
 
-    // Export XLSX
     qs('#exportXlsx').addEventListener('click', async () => {
-      const rows = await dbGetAll();
-      const data = rows.map(r => ({
-        Versions: r.versions, Type: r.type, Campaign: r.campaign, Offer: r.offer,
-        "Gift Card": r.giftCard, "Download Speed": r.download, "Upload Speed": r.upload,
-        "Promo Price": r.promo, Term: r.term, "Step-Up Term": r.stepUpTerm, "Step-Up Price": r.stepUpPrice,
-        "Reg Rate": r.regRate, "Equip Inclu.": r.equip,
-        "Short Disclaimer": r.shortDisc || 'TBA',
-        "Long Disclaimer": r.longDisc || 'TBA',
-        "eero/Plume Disclaimer": r.discEero, "Fiber Fueled Disclaimer": r.discFiber,
-        "Ookla Disclaimer": r.discOokla, Status: r.status, Proof: r.proof
-      }));
-      const ws = XLSX.utils.json_to_sheet(data);
+      const rows = await getAllAsRows();
+      const ws = XLSX.utils.json_to_sheet(rows, { header: HEADERS });
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, 'Offers');
       XLSX.writeFile(wb, 'offers_export.xlsx');
+    });
+
+    /*************** Template Download ***************/
+    function downloadTemplate(asXlsx=false) {
+      const templateRow = {};
+      HEADERS.forEach(h => templateRow[h] = '');
+      if (asXlsx) {
+        const ws = XLSX.utils.json_to_sheet([templateRow], { header: HEADERS });
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Template');
+        XLSX.writeFile(wb, 'offers_template.xlsx');
+      } else {
+        const csv = [HEADERS.join(','), ''.padEnd(0)].join('\n');
+        const blob = new Blob([csv], { type: 'text/csv' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'offers_template.csv';
+        a.click();
+      }
+    }
+    qs('#downloadTemplateXlsx').addEventListener('click', () => downloadTemplate(true));
+    qs('#downloadTemplateCsv').addEventListener('click', () => downloadTemplate(false));
+
+    /*************** Import ***************/
+    qs('#importBtn').addEventListener('click', () => qs('#importFile').click());
+    qs('#importFile').addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = async (evt) => {
+        try {
+          if (file.name.endsWith('.csv')) {
+            const text = evt.target.result;
+            importCSV(text);
+          } else {
+            const data = new Uint8Array(evt.target.result);
+            const wb = XLSX.read(data, { type: 'array' });
+            const ws = wb.Sheets[wb.SheetNames[0]];
+            const json = XLSX.utils.sheet_to_json(ws, { defval: '' });
+            await importRows(json);
+          }
+        } catch (err) {
+          alert('Import failed. Ensure columns match the template.');
+          console.error(err);
+        } finally {
+          e.target.value = '';
+        }
+      };
+      if (file.name.endsWith('.csv')) reader.readAsText(file);
+      else reader.readAsArrayBuffer(file);
+    });
+
+    async function importCSV(text) {
+      const lines = text.split(/\r?\n/).filter(Boolean);
+      const headers = lines[0].split(',');
+      const rows = lines.slice(1).map(line => {
+        const vals = [];
+        let cur = '', inQ = false;
+        for (let i=0;i<line.length;i++) {
+          const ch = line[i];
+          if (ch === '"') { inQ = !inQ; continue; }
+          if (ch === ',' && !inQ) { vals.push(cur); cur=''; continue; }
+          cur += ch;
+        }
+        vals.push(cur);
+        const obj = {};
+        headers.forEach((h, idx) => obj[h] = (vals[idx] || '').trim());
+        return obj;
+      });
+      await importRows(rows);
+    }
+
+    async function importRows(jsonRows) {
+      for (const obj of jsonRows) {
+        const rec = {
+          versions: obj['Versions'] || '',
+          type: obj['Type'] || '',
+          campaign: obj['Campaign'] || '',
+          offer: obj['Offer'] || '',
+          giftCard: obj['Gift Card'] || '',
+          download: obj['Download Speed'] || '',
+          upload: obj['Upload Speed'] || '',
+          promo: obj['Promo Price'] || '',
+          term: obj['Term'] || '',
+          stepUpTerm: obj['Step-Up Term'] || '',
+          stepUpPrice: obj['Step-Up Price'] || '',
+          regRate: obj['Reg Rate'] || '',
+          equip: obj['Equip Inclu.'] || '',
+          shortDisc: obj['Short Disclaimer'] || 'TBA',
+          longDisc: obj['Long Disclaimer'] || 'TBA',
+          discEero: obj['eero/Plume Disclaimer'] || '',
+          discFiber: obj['Fiber Fueled Disclaimer'] || '',
+          discOokla: obj['Ookla Disclaimer'] || '',
+          expires: obj['Offer Expiration'] || '',
+          unlimited: obj['Unlimited Data'] || '',
+          status: obj['Status'] || 'Not Started',
+          proof: obj['Proof'] || ''
+        };
+        await dbAdd(rec);
+      }
+      await refreshTable();
+    }
+
+    /*************** Clear All ***************/
+    qs('#clearAll').addEventListener('click', async () => {
+      if (!confirm('Clear ALL records?')) return;
+      await dbClear();
+      await refreshTable();
+    });
+
+    /*************** Base Disclaimer Generator ***************/
+    const MODAL = qs('#modalBackdrop');
+    const PREV_SHORT = qs('#previewShort');
+    const PREV_LONG = qs('#previewLong');
+    const modalOpen = () => MODAL.style.display = 'flex';
+    const modalClose = () => MODAL.style.display = 'none';
+    qs('#modalClose').addEventListener('click', modalClose);
+    qs('#modalCancel').addEventListener('click', modalClose);
+
+    // Utility to wrap dynamic parts
+    const H = (txt) => `<span class="hilite">${txt || ''}</span>`;
+    const plain = (html) => {
+      const div = document.createElement('div'); div.innerHTML = html; return div.textContent || div.innerText || '';
+    };
+    // Normalize money spacing
+    const cleanMoney = (s) => (s || '').replace(/\s+/g,'').replace(/^\$/, '$');
+
+    function buildBaseShortDisclaimer({ isFiber }) {
+      // BASE ONLY — No fiber dagger, no eero, no Ookla, no gift card.
+      return `Auto Pay and Paperless Billing required. Equipment, taxes, surcharges and fees are not included. Restrictions apply; see disclaimer for details.`;
+    }
+
+    function formatDate(yyyy_mm_dd) {
+      if (!yyyy_mm_dd) return '';
+      const [y,m,d] = yyyy_mm_dd.split('-').map(n=>parseInt(n,10));
+      const dt = new Date(y, m-1, d);
+      const opts = { year:'numeric', month:'short', day:'numeric' };
+      return dt.toLocaleDateString(undefined, opts);
+    }
+
+    function buildBaseLongDisclaimer(model) {
+      // BASE ONLY — No gift card block; no eero trademark; no Ookla.
+      const {
+        download, upload, promo, term, stepUpPrice, stepUpTerm,
+        regRate, expires, unlimited
+      } = model;
+
+      const parts = [];
+
+      // Lead sentence (with highlights)
+      let lead = `Promotional rate for ${H(download)} download x ${H(upload)} upload Internet service is ${H(cleanMoney(promo))}/mo. for the first ${H(term)} months`;
+      if (stepUpPrice && stepUpTerm) {
+        lead += `, then ${H(cleanMoney(stepUpPrice))}/mo. for months ${H(stepUpTerm)}`;
+      }
+      lead += ` and requires Auto Pay with checking/savings account or debit card plus paperless billing.`;
+      parts.push(lead);
+
+      // Regular rate
+      if (regRate) {
+        parts.push(`Regular rates from ${H(regRate)}/mo. and are subject to change at any time.`);
+      }
+
+      // Expiration (optional)
+      if (expires) {
+        parts.push(`Offer expires ${H(formatDate(expires))}.`);
+      }
+
+      // Unlimited Data (optional; default on)
+      if (unlimited) {
+        parts.push(`Includes Unlimited data plan.`);
+      }
+
+      // AUP + general fees (base boilerplate)
+      parts.push(`Visit www.sparklight.com/legal/internet-aup for details of Sparklight’s Acceptable Use Policy.`);
+      parts.push(`Equipment, taxes, surcharges, and fees are not included.`);
+      parts.push(`All services are not available in all areas. Offer available to new customers only. Restrictions apply. Call for details.`);
+
+      return parts.join(' ');
+    }
+
+    qs('#genBaseBtn').addEventListener('click', () => {
+      const model = {
+        download: qs('#down').value.trim() || '—',
+        upload: qs('#up').value.trim() || '—',
+        promo: qs('#promo').value.trim(),
+        term: qs('#term').value.trim(),
+        stepUpPrice: qs('#suPriceCheck').checked ? qs('#suPrice').value.trim() : '',
+        stepUpTerm: qs('#suTermCheck').checked ? qs('#suTerm').value.trim() : '',
+        regRate: qs('#reg').value.trim(),
+        expires: qs('#expires').value,
+        unlimited: qs('#unlimitedCheck').checked ? 'Yes' : ''
+      };
+
+      // Build previews
+      const previewShort = buildBaseShortDisclaimer({});
+      const previewLong = buildBaseLongDisclaimer(model);
+
+      PREV_SHORT.innerHTML = previewShort;
+      PREV_LONG.innerHTML = previewLong;
+
+      // Stash plain versions to apply
+      PREV_SHORT.dataset.plain = plain(previewShort);
+      PREV_LONG.dataset.plain = plain(previewLong);
+
+      modalOpen();
+    });
+
+    qs('#modalApply').addEventListener('click', () => {
+      const s = PREV_SHORT.dataset.plain || 'TBA';
+      const l = PREV_LONG.dataset.plain || 'TBA';
+      qs('#shortDisc').value = s;
+      qs('#longDisc').value = l;
+      modalClose();
     });
 
     /*************** Boot ***************/
