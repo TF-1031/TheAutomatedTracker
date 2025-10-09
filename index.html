@@ -435,7 +435,7 @@
     qs('#resetFormBtn').addEventListener('click', resetForm);
 
     /*************** Create / Update ***************/
-   form.addEventListener('submit', async (e) => {
+  form.addEventListener('submit', async (e) => {
   e.preventDefault();
   const rec = formToRecord();
 
@@ -445,19 +445,21 @@
   }
 
   try {
-    // ✅ Ensure ID is handled correctly for IndexedDB
+    // ✅ Ensure the ID is valid for IndexedDB
     if (rec.id && !isNaN(rec.id)) {
       await dbUpdate(rec);
+      console.log(`✅ Offer updated (ID ${rec.id})`);
     } else {
-      delete rec.id; // Let IndexedDB auto-assign key
+      delete rec.id; // Let IndexedDB auto-generate the key
       await dbAdd(rec);
+      console.log('✅ New offer added to IndexedDB');
     }
 
     resetForm();
     await refreshTable();
 
   } catch (err) {
-    console.error('Save failed:', err);
+    console.error('❌ Save failed:', err);
     alert('Something went wrong while saving this record. Please try again.');
   }
 });
