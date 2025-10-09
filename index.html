@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Sparklight Offer Management</title>
-  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     :root {
       --bg: #f8fafc;
@@ -14,79 +13,41 @@
       --brand: #0284c7;
       --brand-dark: #0369a1;
       --line: #e2e8f0;
-      --good: #16a34a;
-      --bad: #dc2626;
-      --purple: #e0d7ff;
     }
     * { box-sizing: border-box; }
     body { margin: 0; font-family: ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; background: var(--bg); color: var(--ink); }
-    .wrap { max-width: 1150px; margin: 32px auto; padding: 0 16px; }
-    h1 { color: var(--brand-dark); margin-bottom: 10px; }
-    .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 4px 14px rgba(0,0,0,.05); padding: 20px; margin-bottom: 18px; }
-    .grid { display: grid; gap: 14px; grid-template-columns: repeat(12, 1fr); }
-    .col-3 { grid-column: span 3; } .col-6 { grid-column: span 6; } .col-12 { grid-column: span 12; }
-    label { font-size: 12px; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 4px; }
-    input, select { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; font-size: 14px; }
-    .btn { border: none; background: var(--brand); color: #fff; font-weight: 600; padding: 8px 12px; border-radius: 8px; cursor: pointer; }
+    .wrap { max-width: 1150px; margin: 28px auto; padding: 0 16px; }
+    .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 4px 16px rgba(0,0,0,.05); padding: 18px; margin-bottom: 18px; }
+    .btn { border: none; background: var(--brand); color: #fff; font-weight: 700; padding: 8px 12px; border-radius: 10px; cursor: pointer; }
     .btn:hover { background: var(--brand-dark); }
-    table { width: 100%; border-collapse: collapse; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
-    th, td { padding: 6px 10px; text-align: left; border-bottom: 1px solid var(--line); font-size: 12px; vertical-align: top; line-height: 1.3; }
-    th { background: #f1f5f9; font-size: 13px; }
-    td { word-break: break-word; max-width: 200px; transition: font-size .2s ease; }
-    td.shrink { font-size: 10px; } td.shrink-sm { font-size: 8px; } td.shrink-xs { font-size: 6px; }
-    #offerPreviewCard { background: var(--card); border-radius: 14px; box-shadow: 0 4px 16px rgba(0,0,0,.05); margin: 20px 0; overflow: hidden; }
-    #offerPreviewHeader { background: var(--purple); padding: 10px 16px; font-weight: 700; color: #4b0082; border-bottom: 1px solid var(--line); }
-    #offerPreviewBody { padding: 14px 18px; font-size: 14px; line-height: 1.5; color: var(--ink); }
-    #offerPreviewBody strong { color: var(--brand-dark); }
-    footer { text-align: center; font-size: 12px; color: var(--muted); margin: 30px 0 10px; }
-    footer a { color: var(--brand-dark); text-decoration: none; font-weight: 600; }
+    .btn.ghost { background: transparent; color: var(--brand-dark); border: 1px solid var(--line); }
+    .btn.success { background: #16a34a; }
+    .btn.danger { background: #dc2626; }
+    .hint { font-size: 12px; color: var(--muted); text-align: right; margin-top: 6px; }
+    footer { text-align: center; font-size: 12px; color: var(--muted); margin: 22px 0 16px; }
+    footer a { color: var(--brand-dark); font-weight: 700; text-decoration: none; }
     footer a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
   <div class="wrap">
     <h1>💡 Sparklight Offer Management</h1>
-    <div class="card" id="formSection"><form id="offerForm"></form></div>
-    <div id="offerPreviewCard">
-      <div id="offerPreviewHeader">🧾 Offer Summary Preview</div>
-      <div id="offerPreviewBody">
-        <em>Updates automatically as you edit fields.</em><br><br>
-        <div id="previewContent">
-          <strong>Core Enhanced:</strong> <span id="pCore">—</span><br>
-          <strong>Type:</strong> <span id="pType">—</span><br>
-          <strong>Campaign:</strong> <span id="pCampaign">—</span><br>
-          <strong>Offer:</strong> <span id="pOffer">—</span><br>
-          <strong>Promo:</strong> <span id="pPromo">—</span> | <strong>Term:</strong> <span id="pTerm">—</span><br>
-          <strong>Step-Up:</strong> <span id="pStep">—</span><br>
-          <strong>Reg Rate:</strong> <span id="pReg">—</span><br>
-          <strong>Gift Card:</strong> <span id="pGift">—</span><br>
-          <strong>Equipment:</strong> <span id="pEquip">—</span><br>
-          <strong>Expires:</strong> <span id="pExp">—</span> | <strong>Unlimited Data:</strong> <span id="pUnlimited">—</span><br>
-          <strong>Tracker:</strong> <span id="pTracker">—</span>
-        </div>
-      </div>
+
+    <div class="card" style="display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap;">
+      <button class="btn ghost" id="exportCsv">Export CSV</button>
+      <button class="btn success" id="exportXlsx">Export XLSX</button>
+      <button class="btn danger" id="clearAll">Clear All</button>
+      <button class="btn ghost" id="downloadTemplate">Download Template</button>
     </div>
-    <div class="card" style="overflow:auto;">
-      <table id="offersTable">
-        <thead><tr id="tableHeaderRow"></tr></thead><tbody></tbody>
-      </table>
-    </div>
+    <div class="hint">💡 Download a blank CSV to pre-fill offers or prepare imports.</div>
+
     <footer>© 2025 Sparklight Offer Management • <a href="README.md" target="_blank">View Full Documentation</a></footer>
   </div>
+
   <script>
-    let offers = [];
-    const HEADERS = ['Core Enhanced','Type','Campaign','Offer','Gift Card','Promo','Term','Step-Up Term','Step-Up Price','Reg Rate','Equip','Expires','Unlimited','Status'];
-    const tbody = document.querySelector('#offersTable tbody');
-    const headerRow = document.querySelector('#tableHeaderRow');
-    HEADERS.forEach(h=>{const th=document.createElement('th');th.textContent=h;headerRow.appendChild(th);});
-    const form=document.querySelector('#offerForm');
-    form.innerHTML='<div class="grid"><div class="col-6"><label>Core Enhanced</label><select id="coreEnhanced"><option>Core_FMAJ</option><option>Core_NoEERO</option><option>Enhanced_Max</option><option>Add New</option></select><div id="coreEnhancedNewWrap" class="hide" style="margin-top:8px;"><input type="text" id="coreEnhancedNew" placeholder="Enter new Core Enhanced value"><label style="color:#dc2626;display:flex;align-items:center;gap:6px;margin-top:4px;"><input type="checkbox" id="coreEnhancedSavePerm">Save this new Core Enhanced value for future offers.</label></div></div><div class="col-3"><label>Fiber</label><input type="checkbox" id="fiberCheck"></div><div class="col-3"><label>Campaign</label><input type="text" id="campaign"></div><div class="col-12"><label>Offer</label><input type="text" id="offer"></div><div class="col-3"><label>Promo</label><input type="text" id="promo"></div><div class="col-3"><label>Term</label><input type="text" id="term"></div><div class="col-3"><label>Step-Up Term</label><input type="text" id="suTerm"></div><div class="col-3"><label>Step-Up Price</label><input type="text" id="suPrice"></div><div class="col-3"><label>Reg Rate</label><input type="text" id="reg"></div><div class="col-3"><label>Gift Card</label><input type="text" id="gift"></div><div class="col-3"><label>Equipment</label><input type="text" id="equip"></div><div class="col-3"><label>Expires</label><input type="date" id="expires"></div><div class="col-3"><label>Unlimited Data</label><input type="checkbox" id="unlimited" checked></div><div class="col-6"><button type="button" class="btn" id="saveBtn">Save Offer</button></div></div>';
-    function updatePreview(){const v=id=>document.getElementById(id)?.value||'';document.querySelector('#pCore').textContent=v('coreEnhanced');document.querySelector('#pType').textContent=document.getElementById('fiberCheck').checked?'Fiber':'HFC';document.querySelector('#pCampaign').textContent=v('campaign');document.querySelector('#pOffer').textContent=v('offer');document.querySelector('#pPromo').textContent=v('promo');document.querySelector('#pTerm').textContent=v('term');const step=[v('suPrice'),v('suTerm')].filter(Boolean).join(' / ');document.querySelector('#pStep').textContent=step||'—';document.querySelector('#pReg').textContent=v('reg');document.querySelector('#pGift').textContent=v('gift');document.querySelector('#pEquip').textContent=v('equip');document.querySelector('#pExp').textContent=v('expires');document.querySelector('#pUnlimited').textContent=document.getElementById('unlimited').checked?'Yes':'No';const d=new Date(),mm=String(d.getMonth()+1).padStart(2,'0'),dd=String(d.getDate()).padStart(2,'0'),yy=String(d.getFullYear()).slice(-2);document.querySelector('#pTracker').textContent=`Automated_Tracker_(${mm}${dd}${yy})`;}
-    form.addEventListener('input',updatePreview);form.addEventListener('change',updatePreview);
-    document.getElementById('saveBtn').addEventListener('click',()=>{const record={coreEnhanced:document.getElementById('coreEnhanced').value,type:document.getElementById('fiberCheck').checked?'Fiber':'HFC',campaign:document.getElementById('campaign').value,offer:document.getElementById('offer').value,giftCard:document.getElementById('gift').value,promo:document.getElementById('promo').value,term:document.getElementById('term').value,suTerm:document.getElementById('suTerm').value,suPrice:document.getElementById('suPrice').value,reg:document.getElementById('reg').value,equip:document.getElementById('equip').value,expires:document.getElementById('expires').value,unlimited:document.getElementById('unlimited').checked?'Yes':'No'};offers.push(record);addRow(record);updatePreview();});
-    function addRow(r){const tr=document.createElement('tr');const vals=[r.coreEnhanced,r.type,r.campaign,r.offer,r.giftCard,r.promo,r.term,r.suTerm,r.suPrice,r.reg,r.equip,r.expires,r.unlimited,'Not Started'];vals.forEach(v=>{const td=document.createElement('td');td.textContent=v||'';tr.appendChild(td);});tbody.appendChild(tr);shrinkTableText();}
-    function shrinkTableText(){const cells=document.querySelectorAll('#offersTable td');cells.forEach(td=>{const lines=(td.textContent.match(/\n/g)||[]).length+Math.ceil(td.textContent.length/60);td.classList.remove('shrink','shrink-sm','shrink-xs');if(lines>3&&lines<=6)td.classList.add('shrink');else if(lines>6&&lines<=10)td.classList.add('shrink-sm');else if(lines>10)td.classList.add('shrink-xs');});}
-    updatePreview();
+    document.getElementById('downloadTemplate').addEventListener('click', () => {
+      window.open('sparklight_offer_template.csv', '_blank');
+    });
   </script>
 </body>
 </html>
