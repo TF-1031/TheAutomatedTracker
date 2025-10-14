@@ -94,7 +94,7 @@
 
           <!-- Offer Headline -->
           <div class="col-12">
-            <label>Offer (headline)</label>
+            <label>Offer Summary</label>
             <input type="text" id="offer" placeholder="e.g., 600 Mbps for $29.95/mo. for 6 mos.">
           </div>
 
@@ -102,15 +102,15 @@
           <div class="col-3"><label>Download Speed</label><input type="text" id="down" placeholder="e.g., 600 Mbps"></div>
           <div class="col-3"><label>Upload Speed</label><input type="text" id="up" placeholder="e.g., 40 Mbps"></div>
           <div class="col-3"><label>Promo Price</label><input type="text" id="promo" placeholder="$29.95"></div>
-          <div class="col-3"><label>Term (months)</label><input type="text" id="term" placeholder="6"></div>
+          <div class="col-3"><label>Term (mos.)</label><input type="text" id="term" placeholder="6"></div>
 
           <!-- Gift Card -->
           <div class="col-4">
             <label>Gift Card</label>
             <div class="row">
               <input type="checkbox" id="gcCheck">
-              <input type="text" id="gcAmt" class="hide" value="$50" style="max-width:140px;">
-              <span class="hint">Default $50; editable</span>
+              <input type="text" id="gcAmt" class="hide" value="$100" style="max-width:140px;">
+              <span class="hint">Default $100; editable</span>
             </div>
           </div>
 
@@ -151,11 +151,11 @@
           <!-- Disclaimers -->
           <div class="col-6">
             <label>Short Disclaimer</label>
-            <textarea id="shortDisc" placeholder="Click 'Generate Disclaimers'"></textarea>
+            <textarea id="shortDisc" </textarea>
           </div>
           <div class="col-6">
             <label>Long Disclaimer</label>
-            <textarea id="longDisc" placeholder="Click 'Generate Disclaimers'"></textarea>
+            <textarea id="longDisc" </textarea>
           </div>
           <div class="col-12" style="display:flex; justify-content:flex-end; gap:8px;">
             <button type="button" class="btn ghost" id="genBaseBtn">🪄 Generate Disclaimers</button>
@@ -163,15 +163,19 @@
 
           <div class="col-12 hr"></div>
 
-          <!-- Hidden Status + Automated Tracker + Notes -->
-          <input type="hidden" id="status" value="Not Started">
-          <div class="col-6">
-            <label>Automated Tracker</label>
-            <input type="text" id="automatedTracker" readonly>
-            <div class="hint">Auto-filled as Automated_Tracker_(MMDDYY)</div>
-          </div>
-          <div class="col-6">
-            <label>Notes (optional)</label>
+       <!-- Hidden Status + Automated Tracker + Notes -->
+<div style="display:none;">
+  <input type="hidden" id="status" value="Not Started">
+  <div class="col-6">
+    <label>Automated Tracker</label>
+    <input type="text" id="automatedTracker" readonly>
+    <div class="hint">Auto-filled as Automated_Tracker_(MMDDYY)</div>
+  </div>
+  <div class="col-6">
+    <label>Notes (optional)</label>
+    <input type="text" id="notes">
+  </div>
+            <label>Notes</label>
             <input type="text" id="notes">
           </div>
 
