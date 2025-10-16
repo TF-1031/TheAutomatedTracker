@@ -4,76 +4,29 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>The Automated Tracker</title>
+  <link rel="stylesheet" href="assets/style.css" />
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <style>
-    :root {
-      --bg: #f8fafc;
-      --card: #ffffff;
-      --ink: #0f172a;
-      --muted: #475569;
-      --brand: #0284c7;
-      --brand-dark: #0369a1;
-      --line: #e2e8f0;
-      --good: #16a34a;
-      --bad: #dc2626;
-      --purple: #e9ddff;
-      --accent: #d32f2f;
-    }
-    * { box-sizing: border-box; }
-    body { margin: 0; font-family: ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; background: var(--bg); color: var(--ink); }
-    .wrap { max-width: 1150px; margin: 28px auto; padding: 0 16px; }
-    h1 { color: var(--brand-dark); margin: 0 0 10px; }
-    .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 4px 16px rgba(0,0,0,.05); padding: 18px; margin-bottom: 18px; }
-    .grid { display: grid; gap: 14px; grid-template-columns: repeat(12, 1fr); }
-    .col-2{grid-column:span 2}.col-3{grid-column:span 3}.col-4{grid-column:span 4}.col-6{grid-column:span 6}.col-8{grid-column:span 8}.col-12{grid-column:span 12}
-    label { font-size: 12px; text-transform: uppercase; color: var(--muted); display: block; margin-bottom: 4px; }
-    input[type="text"], input[type="date"], select, textarea { width: 100%; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; font-size: 14px; background:#fff; }
-    textarea { min-height: 64px; }
-    .row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
-    .btn { border: none; background: var(--brand); color:#fff; font-weight:700; padding: 8px 12px; border-radius: 10px; cursor:pointer; }
-    .btn:hover{ background: var(--brand-dark); }
-    .btn.ghost{ background: transparent; color: var(--brand-dark); border:1px solid var(--line); }
-    .btn.success{ background: var(--good); }
-    .btn.danger{ background: var(--bad); }
-    .hint{ font-size:12px; color: var(--muted); }
-    .hide{ display:none; }
-    .hr{ height:1px; background:var(--line); margin:10px 0; }
-
-    /* Offer Summary Preview Card */
-    #offerPreviewCard{ background:#fff; border:1px solid var(--line); border-radius:14px; overflow:hidden; }
-    #offerPreviewHeader{ background: var(--purple); color:#4b0082; font-weight:800; padding:10px 16px; border-bottom:1px solid var(--line); }
-    #offerPreviewBody{ padding:14px 18px; font-size:14px; line-height:1.5; white-space:pre-line; }
-    #offerPreviewBody strong{ color: var(--brand-dark); }
-
-    /* Table styling (compact, shrink for multi-line) */
-    table{ width:100%; border-collapse:collapse; border:1px solid var(--line); border-radius:12px; overflow:hidden; }
-    th, td{ padding:6px 8px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top; line-height:1.3; }
-    th{ background:#f1f5f9; font-size:12px; }
-    td{ font-size:12px; word-break:break-word; max-width:180px; transition: font-size .15s ease; }
-    td.shrink{ font-size:10px; }
-    td.shrink-sm{ font-size:8px; }
-    td.shrink-xs{ font-size:6px; }
-
-    footer{ text-align:center; font-size:12px; color:var(--muted); margin: 22px 0 16px; }
-    footer a{ color: var(--brand-dark); font-weight:700; text-decoration:none; }
-    footer a:hover{ text-decoration:underline; }
-  </style>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script defer src="assets/main.js"></script>
 </head>
 <body>
+  <div class="toast hide" id="toast">Database Ready ✅</div>
+
   <div class="wrap">
-    <h1>💁 The Automated Tracker</h1>
+    <h1>The Automated Tracker</h1>
 
     <!-- FORM -->
     <div class="card">
       <form id="offerForm">
         <div class="grid">
+
           <!-- Rate Version -->
           <div class="col-6">
             <label>Rate Version</label>
             <select id="rateVersion"></select>
             <div id="rateVersionNewWrap" class="hide" style="margin-top:8px;">
               <input type="text" id="rateVersionNew" placeholder="Enter New Rate Version">
-              <label class="row" style="color:#dc2626; margin-top:6px;">
+              <label class="row warning">
                 <input type="checkbox" id="rateVersionSavePerm" />
                 <span>Save this new Rate Version for future offers.</span>
               </label>
@@ -82,44 +35,44 @@
 
           <!-- Fiber -->
           <div class="col-2">
-            <label>Fiber</label>
-            <div class="row"><input type="checkbox" id="fiberCheck"><span class="hint"></span></div>
+            <label class="inline-checkbox"><input type="checkbox" id="fiberCheck"> Fiber</label>
           </div>
 
           <!-- Campaign -->
           <div class="col-4">
             <label>Campaign</label>
-            <input type="text" id="campaign" placeholder="e.g., BFCM (11/28–12/5)" required>
+            <input type="text" id="campaign" placeholder="General Offer" required>
           </div>
 
-          <!-- Offer Headline -->
+          <!-- Offer Summary -->
           <div class="col-12">
             <label>Offer Summary</label>
-            <input type="text" id="offer" placeholder="e.g., 600 Mbps for $29.95/mo. for 6 mos.">
+            <input type="text" id="offer" placeholder="100 Mbps for $29.95/mo. for 12 mos. w/ Auto Pay Paperless Billing.">
           </div>
 
           <!-- Speeds & Pricing -->
-          <div class="col-3"><label>Download Speed</label><input type="text" id="down" placeholder="e.g., 600 Mbps"></div>
-          <div class="col-3"><label>Upload Speed</label><input type="text" id="up" placeholder="e.g., 40 Mbps"></div>
+          <div class="col-3"><label>Download Speed</label><input type="text" id="down" placeholder="100 Mbps"></div>
+          <div class="col-3"><label>Upload Speed</label><input type="text" id="up" placeholder="10 Mbps"></div>
           <div class="col-3"><label>Promo Price</label><input type="text" id="promo" placeholder="$29.95"></div>
-          <div class="col-3"><label>Term (mos.)</label><input type="text" id="term" placeholder="6"></div>
+          <div class="col-3"><label>Term (months)</label><input type="text" id="term" placeholder="12"></div>
 
           <!-- Gift Card -->
           <div class="col-4">
-            <label>Gift Card</label>
+            <label class="inline-checkbox">
+              <input type="checkbox" id="gcCheck"> Gift Card
+            </label>
             <div class="row">
-              <input type="checkbox" id="gcCheck">
               <input type="text" id="gcAmt" class="hide" value="$100" style="max-width:140px;">
-              <span class="hint">Default $100; editable</span>
             </div>
           </div>
 
           <!-- Step-Up Pricing -->
           <div class="col-4">
-            <label>Step-Up Pricing</label>
+            <label class="inline-checkbox">
+              <input type="checkbox" id="stepCheck"> Step-Up Pricing
+            </label>
             <div class="row">
-              <input type="checkbox" id="stepCheck">
-              <input type="text" id="suTerm" class="hide" placeholder="e.g., 7–12 mos" style="max-width:160px;">
+              <input type="text" id="suTerm" class="hide" placeholder="7–12" style="max-width:160px;">
               <input type="text" id="suPrice" class="hide" placeholder="$59.95" style="max-width:120px;">
             </div>
           </div>
@@ -128,12 +81,10 @@
 
           <!-- Equipment & Mentions -->
           <div class="col-4">
-            <label>Equipment Included</label>
-            <div class="row"><input type="checkbox" id="equipIncluded"></div>
+            <label class="inline-checkbox"><input type="checkbox" id="equipIncluded"> Equipment Included</label>
           </div>
           <div class="col-4">
-            <label>eero/Plume Mentioned</label>
-            <div class="row"><input type="checkbox" id="eeroMentioned"></div>
+            <label class="inline-checkbox"><input type="checkbox" id="eeroMentioned"> eero/Plume Mentioned</label>
           </div>
 
           <!-- Expiration & Unlimited -->
@@ -142,8 +93,7 @@
             <input type="date" id="expires">
           </div>
           <div class="col-4">
-            <label>Unlimited Data</label>
-            <div class="row"><input type="checkbox" id="unlimitedCheck" checked></div>
+            <label class="inline-checkbox"><input type="checkbox" id="unlimitedCheck" checked> Unlimited Data</label>
           </div>
 
           <div class="col-12 hr"></div>
@@ -151,11 +101,11 @@
           <!-- Disclaimers -->
           <div class="col-6">
             <label>Short Disclaimer</label>
-            <textarea id="shortDisc" </textarea>
+            <textarea id="shortDisc" placeholder="Click 'Generate Disclaimers'"></textarea>
           </div>
           <div class="col-6">
             <label>Long Disclaimer</label>
-            <textarea id="longDisc" </textarea>
+            <textarea id="longDisc" placeholder="Click 'Generate Disclaimers'"></textarea>
           </div>
           <div class="col-12" style="display:flex; justify-content:flex-end; gap:8px;">
             <button type="button" class="btn ghost" id="genBaseBtn">🪄 Generate Disclaimers</button>
@@ -163,25 +113,21 @@
 
           <div class="col-12 hr"></div>
 
-       <!-- Hidden Status + Automated Tracker + Notes -->
-<div style="display:none;">
-  <input type="hidden" id="status" value="Not Started">
-  <div class="col-6">
-    <label>Automated Tracker</label>
-    <input type="text" id="automatedTracker" readonly>
-    <div class="hint">Auto-filled as Automated_Tracker_(MMDDYY)</div>
-  </div>
-  <div class="col-6">
-    <label>Notes (optional)</label>
-    <input type="text" id="notes">
-  </div>
-            <label>Notes</label>
-            <input type="text" id="notes">
+          <!-- Hidden Status + Automated Tracker + Notes -->
+          <input type="hidden" id="status" value="Not Started">
+          <div class="col-6 hide">
+            <label>Automated Tracker</label>
+            <input type="text" id="automatedTracker" readonly value="Automated_Tracker_(101525)">
+            <div class="hint">Auto-filled as Automated_Tracker_(MMDDYY)</div>
+          </div>
+          <div class="col-6">
+            <label>Notes (optional)</label>
+            <input type="text" id="notes" placeholder="Optional notes or internal comments.">
           </div>
 
           <div class="col-12" style="display:flex; justify-content:flex-end; gap:8px;">
             <button type="button" class="btn ghost" id="resetFormBtn">Reset</button>
-            <button type="submit" class="btn">Save Offer</button>
+            <button type="submit" class="btn" id="submitBtn">Save Offer</button>
           </div>
         </div>
         <input type="hidden" id="editId" value="">
@@ -190,7 +136,7 @@
 
     <!-- Offer Summary Preview -->
     <div id="offerPreviewCard" class="card">
-      <div id="offerPreviewHeader">🧾 Offer Summary Preview</div>
+      <div id="offerPreviewHeader">Offer Summary Preview</div>
       <div id="offerPreviewBody">
         <em>Updates automatically as you edit fields.</em><br><br>
         <div>
@@ -205,481 +151,70 @@
           <strong>Gift Card:</strong> <span id="pGift">—</span><br>
           <strong>Equipment Included:</strong> <span id="pEquip">—</span><br>
           <strong>eero/Plume Mentioned:</strong> <span id="pEero">—</span><br>
-          <strong>Expires:</strong> <span id="pExp">—</span> | <strong>Unlimited Data:</strong> <span id="pUnlimited">—</span><br><br>
-          <strong>Short Disclaimer:</strong><br>
-          <span id="pShortDisc">—</span><br><br>
-          <strong>Long Disclaimer:</strong><br>
-          <span id="pLongDisc">—</span>
+          <strong>Expires:</strong> <span id="pExp">—</span> | <strong>Unlimited Data:</strong> <span id="pUnlimited">—</span><br>
         </div>
       </div>
     </div>
 
-    <!-- TABLE -->
-    <div class="card" style="overflow:auto;">
+    <!-- Offers Table -->
+    <div class="card">
+      <div class="row" style="justify-content: space-between; align-items:center;">
+        <h2 style="margin:0;">Saved Offers</h2>
+        <div class="row">
+          <button class="btn ghost" id="exportCsvBtn">Export CSV</button>
+          <button class="btn" id="exportXlsxBtn">Export XLSX</button>
+        </div>
+      </div>
+      <div class="hr"></div>
       <table id="offersTable">
         <thead>
-          <tr id="tableHeaderRow"></tr>
+          <tr>
+            <th>Thumbnail</th>
+            <th>Rate Version</th>
+            <th>Type</th>
+            <th>Campaign</th>
+            <th>Offer</th>
+            <th>Promo</th>
+            <th>Term</th>
+            <th>Reg Rate</th>
+            <th>Gift Card</th>
+            <th>Expires</th>
+            <th>Status</th>
+            <th style="text-align:right;">Actions</th>
+          </tr>
         </thead>
         <tbody></tbody>
       </table>
+      <footer class="row" style="justify-content: space-between;">
+        <span class="hint">Filename on export: <code>Automated_Tracker_(MMDDYY)</code></span>
+        <button class="btn ghost" id="clearAllBtn" title="Delete all saved offers">🧹 Clear All Offers</button>
+      </footer>
     </div>
-
-    <!-- ACTIONS -->
-    <div class="card" style="display:flex; justify-content:flex-end; gap:8px; flex-wrap:wrap;">
-      <button class="btn ghost" id="exportCsv">Export CSV</button>
-      <button class="btn success" id="exportXlsx">Export XLSX</button>
-      <button class="btn danger" id="clearAll">Clear All</button>
-      <button class="btn ghost" id="downloadTemplate">Download Template</button>
-    </div>
-    <div class="hint">💡 Download a blank CSV to pre-fill offers or prepare imports.</div>
-
-    <footer>© 2025 Sparklight Offer Management • <a href="README.md" target="_blank">View Full Documentation</a></footer>
   </div>
 
-  <script>
-    /***************** Rate Version Options with Add-New *****************/
-    const RATE_VERSION_DEFAULTS = [
-      "Core_Enhanced",
-      "Core_FMAJ",
-      "Core_NoEERO",
-      "Core_Equip",
-      "Core_Max_HHI",
-      "Core_Max_Equip",
-      "Core_Max_Exp",
-      "Core_Max_Equip_Sioux",
-      "Enhanced_Equip",
-      "Enhanced_Max",
-      "Enhanced_Max_Equip",
-      "Edge",
-      "Edge_Equip",
-      "Edge_Max",
-      "Edge_Max_VIC",
-      "Add New Rate Version"
-    ];
-    const RV_LS_KEY = "rateVersionOptions";
-
-    function getRateVersionOptions(){
-      try{
-        const raw = localStorage.getItem(RV_LS_KEY);
-        if(!raw) return [...RATE_VERSION_DEFAULTS];
-        const parsed = JSON.parse(raw);
-        if(Array.isArray(parsed) && parsed.length) return parsed;
-      }catch(e){}
-      return [...RATE_VERSION_DEFAULTS];
-    }
-    function setRateVersionOptions(opts){
-      localStorage.setItem(RV_LS_KEY, JSON.stringify(opts));
-    }
-    function populateRateVersionSelect(selected=""){
-      const sel = document.getElementById('rateVersion');
-      const opts = getRateVersionOptions();
-      sel.innerHTML = "";
-      opts.forEach(v=>{
-        const o=document.createElement('option'); o.value=v; o.textContent=v; sel.appendChild(o);
-      });
-      if(selected && opts.includes(selected)) sel.value = selected; else sel.value = opts[0];
-      handleRateVersionChange(sel.value);
-    }
-    function handleRateVersionChange(val){
-      const wrap = document.getElementById('rateVersionNewWrap');
-      if(val === "Add New Rate Version"){ wrap.classList.remove('hide'); }
-      else { wrap.classList.add('hide'); document.getElementById('rateVersionNew').value=""; document.getElementById('rateVersionSavePerm').checked=false; }
-    }
-
-    /***************** IndexedDB *****************/
-    const DB_NAME='sparklight_offers_db_v8';
-    const STORE='offers';
-    let db;
-    function openDB(){
-      return new Promise((res,rej)=>{
-        const req = indexedDB.open(DB_NAME,1);
-        req.onupgradeneeded = e=>{
-          const dbx = e.target.result;
-          if(!dbx.objectStoreNames.contains(STORE)){
-            dbx.createObjectStore(STORE,{keyPath:'id',autoIncrement:true});
-          }
-        };
-        req.onsuccess = ()=>{ db=req.result; res(); };
-        req.onerror = ()=>rej(req.error);
-      });
-    }
-    function dbAdd(rec){
-      return new Promise((res,rej)=>{
-        const tx=db.transaction(STORE,'readwrite');
-        tx.objectStore(STORE).add(rec).onsuccess=()=>res();
-        tx.onerror=()=>rej(tx.error);
-      });
-    }
-    function dbUpdate(rec){
-      return new Promise((res,rej)=>{
-        const tx=db.transaction(STORE,'readwrite');
-        tx.objectStore(STORE).put(rec).onsuccess=()=>res();
-        tx.onerror=()=>rej(tx.error);
-      });
-    }
-    function dbDelete(id){
-      return new Promise((res,rej)=>{
-        const tx=db.transaction(STORE,'readwrite');
-        tx.objectStore(STORE).delete(id).onsuccess=()=>res();
-        tx.onerror=()=>rej(tx.error);
-      });
-    }
-    function dbGetAll(){
-      return new Promise((res,rej)=>{
-        const tx=db.transaction(STORE,'readonly');
-        const r=tx.objectStore(STORE).getAll();
-        r.onsuccess=()=>res(r.result||[]);
-        r.onerror=()=>rej(r.error);
-      });
-    }
-    function dbClear(){
-      return new Promise((res,rej)=>{
-        const tx=db.transaction(STORE,'readwrite');
-        tx.objectStore(STORE).clear().onsuccess=()=>res();
-        tx.onerror=()=>rej(tx.error);
-      });
-    }
-
-    /***************** Helpers & UI *****************/
-    const qs = s=>document.querySelector(s);
-    const tbody = qs('#offersTable tbody');
-    const form = qs('#offerForm');
-
-    function autoTracker(){
-      const d=new Date();
-      const mm=String(d.getMonth()+1).padStart(2,'0');
-      const dd=String(d.getDate()).padStart(2,'0');
-      const yy=String(d.getFullYear()).slice(-2);
-      return `Automated_Tracker_(${mm}${dd}${yy})`;
-    }
-
-    function resetForm(){
-      form.reset();
-      populateRateVersionSelect();
-      qs('#gcAmt').value = '$50';
-      qs('#status').value = 'Not Started';
-      qs('#automatedTracker').value = autoTracker();
-      // hide toggles
-      qs('#gcAmt').classList.add('hide');
-      qs('#suTerm').classList.add('hide');
-      qs('#suPrice').classList.add('hide');
-      qs('#rateVersionNewWrap').classList.add('hide');
-      // clear ids
-      qs('#editId').value = '';
-      updatePreview();
-    }
-
-    function currentType(){ return qs('#fiberCheck').checked ? 'Fiber' : 'HFC'; }
-    function currentDiscFiber(){ return qs('#fiberCheck').checked ? 'Yes' : ''; }
-
-    function formToRecord(){
-      // Rate Version resolve
-      let rv = qs('#rateVersion').value;
-      if(rv === 'Add New Rate Version'){
-        const custom = qs('#rateVersionNew').value.trim();
-        if(custom){ rv = custom; }
-        // persist?
-        if(qs('#rateVersionSavePerm').checked && custom){
-          const opts = getRateVersionOptions();
-          if(!opts.includes(custom)){
-            const i = opts.indexOf('Add New Rate Version');
-            if(i>=0) opts.splice(i,0,custom); else opts.push(custom);
-            setRateVersionOptions(opts);
-            populateRateVersionSelect(custom);
-          }
-        }
-      }
-
-      return {
-        id: qs('#editId').value ? Number(qs('#editId').value) : undefined,
-        rateVersion: rv,
-        type: currentType(),
-        campaign: qs('#campaign').value.trim(),
-        offer: qs('#offer').value.trim(),
-        download: qs('#down').value.trim(),
-        upload: qs('#up').value.trim(),
-        promo: qs('#promo').value.trim(),
-        term: qs('#term').value.trim(),
-        giftCard: qs('#gcCheck').checked ? (qs('#gcAmt').value.trim() || '$50') : '',
-        stepUpTerm: qs('#stepCheck').checked ? qs('#suTerm').value.trim() : '',
-        stepUpPrice: qs('#stepCheck').checked ? qs('#suPrice').value.trim() : '',
-        regRate: qs('#reg').value.trim(),
-        equipIncluded: qs('#equipIncluded').checked ? 'Yes' : '',
-        eeroMentioned: qs('#eeroMentioned').checked ? 'Yes' : '',
-        discFiber: currentDiscFiber(),
-        expires: qs('#expires').value,
-        unlimited: qs('#unlimitedCheck').checked ? 'Yes' : '',
-        shortDisc: qs('#shortDisc').value.trim(),
-        longDisc: qs('#longDisc').value.trim(),
-        status: 'Not Started',
-        automatedTracker: qs('#automatedTracker').value,
-        notes: qs('#notes').value.trim()
-      };
-    }
-
-    function recToRow(r){
-      const tr=document.createElement('tr');
-      const cells = [
-        r.rateVersion, r.type, r.campaign, r.offer, r.giftCard,
-        r.download, r.upload, r.promo, r.term,
-        r.stepUpTerm, r.stepUpPrice, r.regRate,
-        r.equipIncluded, r.eeroMentioned, r.discFiber,
-        r.shortDisc, r.longDisc, r.expires, r.unlimited,
-        r.status, r.automatedTracker, r.notes
-      ];
-      cells.forEach(v=>{
-        const td=document.createElement('td'); td.textContent=v||''; tr.appendChild(td);
-      });
-      const tdAct = document.createElement('td');
-      tdAct.innerHTML = '<button class="btn ghost" data-edit>Edit</button> <button class="btn danger" data-del>Delete</button>';
-      tr.appendChild(tdAct);
-      tr.dataset.id = r.id;
-      return tr;
-    }
-
-    function updatePreview(){
-      const v = id => qs('#'+id)?.value || '';
-      qs('#pRate').textContent = (qs('#rateVersion').value === 'Add New Rate Version' ? (qs('#rateVersionNew').value || '(new)') : qs('#rateVersion').value);
-      qs('#pType').textContent = currentType();
-      qs('#pCampaign').textContent = v('campaign');
-      qs('#pOffer').textContent = v('offer');
-      qs('#pSpeeds').textContent = [v('down'), v('up')].filter(Boolean).join(' x ') || '—';
-      qs('#pPromo').textContent = v('promo') || '—';
-      qs('#pTerm').textContent = v('term') || '—';
-      const step = (qs('#stepCheck').checked ? [v('suPrice'), v('suTerm')].filter(Boolean).join(' • ') : '');
-      qs('#pStep').textContent = step || '—';
-      qs('#pReg').textContent = v('reg') || '—';
-      qs('#pGift').textContent = qs('#gcCheck').checked ? (qs('#gcAmt').value || '$50') : '—';
-      qs('#pEquip').textContent = qs('#equipIncluded').checked ? 'Yes' : 'No';
-      qs('#pEero').textContent = qs('#eeroMentioned').checked ? 'Yes' : 'No';
-      qs('#pExp').textContent = v('expires') || '—';
-      qs('#pUnlimited').textContent = qs('#unlimitedCheck').checked ? 'Yes' : 'No';
-      // NEW: disclaimers in preview (plain text)
-      qs('#pShortDisc').textContent = qs('#shortDisc').value || '—';
-      qs('#pLongDisc').textContent = qs('#longDisc').value || '—';
-    }
-
-    /***************** Table Headers *****************/
-    const HEADERS = [
-      'Rate Version','Type','Campaign','Offer','Gift Card','Download','Upload','Promo','Term',
-      'Step-Up Term','Step-Up Price','Reg Rate','Equip Included','eero/Plume Mentioned','Fiber Fueled',
-      'Short Disc','Long Disc','Expires','Unlimited','Status','Automated Tracker','Notes','Actions'
-    ];
-    const headerRow = document.getElementById('tableHeaderRow');
-    HEADERS.forEach(h=>{ const th=document.createElement('th'); th.textContent=h; headerRow.appendChild(th); });
-
-    /***************** Show/Hide Controls *****************/
-    document.getElementById('gcCheck').addEventListener('change', e => document.getElementById('gcAmt').classList.toggle('hide', !e.target.checked));
-    document.getElementById('stepCheck').addEventListener('change', e => {
-      document.getElementById('suTerm').classList.toggle('hide', !e.target.checked);
-      document.getElementById('suPrice').classList.toggle('hide', !e.target.checked);
-    });
-    document.getElementById('rateVersion').addEventListener('change', e => handleRateVersionChange(e.target.value));
-
-    ['input','change'].forEach(evt => form.addEventListener(evt, updatePreview));
-
-    document.getElementById('resetFormBtn').addEventListener('click', resetForm);
-
-    /***************** Save / Edit / Delete *****************/
-    form.addEventListener('submit', async (e)=>{
-      e.preventDefault();
-      const rec = formToRecord();
-      if(!rec.campaign){ alert('Campaign is required'); return; }
-      try{
-        if(rec.id && !isNaN(rec.id)){
-          await dbUpdate(rec);
-          console.log(`✅ Offer updated (ID ${rec.id})`);
-        } else {
-          delete rec.id;
-          await dbAdd(rec);
-          console.log('✅ New offer added to IndexedDB');
-        }
-        resetForm();
-        await refreshTable();
-      }catch(err){
-        console.error('❌ Save failed:', err);
-        alert('Error saving record.');
-      }
-    });
-
-    document.querySelector('#offersTable tbody').addEventListener('click', async (e)=>{
-      const tr = e.target.closest('tr');
-      if(!tr) return;
-      const id = Number(tr.dataset.id);
-      if(e.target.matches('[data-del]')){
-        if(confirm('Delete this record?')){
-          await dbDelete(id);
-          await refreshTable();
-        }
-      }
-      if(e.target.matches('[data-edit]')){
-        const all = await dbGetAll();
-        const rec = all.find(r=>r.id===id);
-        if(!rec) return;
-        // populate
-        populateRateVersionSelect(rec.rateVersion);
-        if(!getRateVersionOptions().includes(rec.rateVersion)){
-          document.getElementById('rateVersion').value = 'Add New Rate Version';
-          handleRateVersionChange('Add New Rate Version');
-          document.getElementById('rateVersionNew').value = rec.rateVersion;
-        }
-        document.getElementById('editId').value = rec.id;
-        document.getElementById('fiberCheck').checked = (rec.type === 'Fiber');
-        document.getElementById('campaign').value = rec.campaign || '';
-        document.getElementById('offer').value = rec.offer || '';
-        document.getElementById('down').value = rec.download || '';
-        document.getElementById('up').value = rec.upload || '';
-        document.getElementById('promo').value = rec.promo || '';
-        document.getElementById('term').value = rec.term || '';
-        if(rec.giftCard){ document.getElementById('gcCheck').checked=true; document.getElementById('gcAmt').classList.remove('hide'); document.getElementById('gcAmt').value = rec.giftCard; } else { document.getElementById('gcCheck').checked=false; document.getElementById('gcAmt').classList.add('hide'); document.getElementById('gcAmt').value='$50'; }
-        if(rec.stepUpTerm || rec.stepUpPrice){ document.getElementById('stepCheck').checked=true; document.getElementById('suTerm').classList.remove('hide'); document.getElementById('suPrice').classList.remove('hide'); document.getElementById('suTerm').value=rec.stepUpTerm; document.getElementById('suPrice').value=rec.stepUpPrice; } else { document.getElementById('stepCheck').checked=false; document.getElementById('suTerm').classList.add('hide'); document.getElementById('suPrice').classList.add('hide'); document.getElementById('suTerm').value=''; document.getElementById('suPrice').value=''; }
-        document.getElementById('reg').value = rec.regRate || '';
-        document.getElementById('equipIncluded').checked = rec.equipIncluded === 'Yes';
-        document.getElementById('eeroMentioned').checked = rec.eeroMentioned === 'Yes';
-        document.getElementById('expires').value = rec.expires || '';
-        document.getElementById('unlimitedCheck').checked = rec.unlimited === 'Yes';
-        document.getElementById('shortDisc').value = rec.shortDisc || '';
-        document.getElementById('longDisc').value = rec.longDisc || '';
-        document.getElementById('automatedTracker').value = rec.automatedTracker || autoTracker();
-        document.getElementById('notes').value = rec.notes || '';
-        window.scrollTo({top:0, behavior:'smooth'});
-        updatePreview();
-      }
-    });
-
-    async function refreshTable(){
-      tbody.innerHTML = '';
-      const rows = await dbGetAll();
-      rows.forEach(r=> tbody.appendChild(recToRow(r)));
-      shrinkTableText();
-    }
-
-    function shrinkTableText(){
-      const cells = document.querySelectorAll('#offersTable td');
-      cells.forEach(td=>{
-        const len = td.textContent.length;
-        td.classList.remove('shrink','shrink-sm','shrink-xs');
-        if(len>120 && len<=240) td.classList.add('shrink');
-        else if(len>240 && len<=420) td.classList.add('shrink-sm');
-        else if(len>420) td.classList.add('shrink-xs');
-      });
-    }
-
-    /***************** Export *****************/
-    const EXPORT_HEADERS = [
-      'Rate Version','Type','Campaign','Offer','Gift Card','Download','Upload','Promo','Term',
-      'Step-Up Term','Step-Up Price','Reg Rate','Equip Included','eero/Plume Mentioned','Fiber Fueled',
-      'Short Disclaimer','Long Disclaimer','Offer Expiration','Unlimited Data','Status','Automated Tracker','Notes'
-    ];
-
-    async function getAllAsRows(){
-      const rows = await dbGetAll();
-      return rows.map(r=>({
-        "Rate Version": r.rateVersion, "Type": r.type, "Campaign": r.campaign, "Offer": r.offer,
-        "Gift Card": r.giftCard, "Download": r.download, "Upload": r.upload, "Promo": r.promo, "Term": r.term,
-        "Step-Up Term": r.stepUpTerm, "Step-Up Price": r.stepUpPrice, "Reg Rate": r.regRate,
-        "Equip Included": r.equipIncluded, "eero/Plume Mentioned": r.eeroMentioned, "Fiber Fueled": r.discFiber,
-        "Short Disclaimer": r.shortDisc, "Long Disclaimer": r.longDisc,
-        "Offer Expiration": r.expires, "Unlimited Data": r.unlimited,
-        "Status": r.status, "Automated Tracker": r.automatedTracker, "Notes": r.notes
-      }));
-    }
-
-    document.getElementById('exportCsv').addEventListener('click', async ()=>{
-      const rows = await getAllAsRows();
-      const csv = [
-        EXPORT_HEADERS.join(','),
-        ...rows.map(obj => EXPORT_HEADERS.map(h => {
-          const v = (obj[h] ?? '').toString().replace(/\r?\n/g,' ');
-          return /[",\n]/.test(v) ? `"${v.replace(/"/g,'""')}"` : v;
-        }).join(','))
-      ].join('\n');
-      const blob = new Blob([csv], {type:'text/csv'});
-      const a = document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='offers_export.csv'; a.click();
-    });
-
-    document.getElementById('exportXlsx').addEventListener('click', async ()=>{
-      const rows = await getAllAsRows();
-      const ws = XLSX.utils.json_to_sheet(rows, { header: EXPORT_HEADERS });
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Offers');
-      XLSX.writeFile(wb, 'offers_export.xlsx');
-    });
-
-    /***************** Clear All *****************/
-    document.getElementById('clearAll').addEventListener('click', async ()=>{
-      if(!confirm('Clear ALL records?')) return;
-      await dbClear();
-      await refreshTable();
-    });
-
-    /***************** Download Template *****************/
-    document.getElementById('downloadTemplate').addEventListener('click', ()=>{
-      window.open('sparklight_offer_template.csv', '_blank');
-    });
-
-    /***************** Disclaimer Generation (Base Only) *****************/
-    const H = (txt)=>`<span style="color:${'var(--accent)'};font-weight:700;">${txt||''}</span>`;
-    const plain = (html)=>{ const d=document.createElement('div'); d.innerHTML=html; return d.textContent || d.innerText || ''; };
-    const money = (s)=> (s||'').replace(/\s+/g,'').replace(/^\$/, '$');
-
-    function fmtDate(ymd){
-      if(!ymd) return '';
-      const [y,m,d] = ymd.split('-').map(n=>parseInt(n,10));
-      const dt = new Date(y, m-1, d);
-      return dt.toLocaleDateString(undefined,{month:'short',day:'numeric',year:'numeric'});
-    }
-
-    function buildShortBase(){
-      return `Auto Pay and Paperless Billing required. Equipment, taxes, surcharges and fees are not included. Restrictions apply; see disclaimer for details.`;
-    }
-
-    function buildLongBase(model){
-      const { download, upload, promo, term, stepUpPrice, stepUpTerm, regRate, expires, unlimited } = model;
-      const parts = [];
-      let lead = `Promotional rate for ${H(download)} download x ${H(upload)} upload Internet service is ${H(money(promo))}/mo. for the first ${H(term)} months`;
-      if(stepUpPrice && stepUpTerm){
-        lead += `, then ${H(money(stepUpPrice))}/mo. for months ${H(stepUpTerm)}`;
-      }
-      lead += ` and requires Auto Pay with checking/savings account or debit card plus paperless billing.`;
-      parts.push(lead);
-      if(regRate) parts.push(`Regular rates from ${H(regRate)}/mo. and are subject to change at any time.`);
-      if(expires) parts.push(`Offer expires ${H(fmtDate(expires))}.`);
-      if(unlimited) parts.push(`Includes Unlimited data plan.`);
-      parts.push(`Visit www.sparklight.com/legal/internet-aup for details of Sparklight’s Acceptable Use Policy.`);
-      parts.push(`Equipment, taxes, surcharges, and fees are not included.`);
-      parts.push(`All services are not available in all areas. Offer available to new customers only. Restrictions apply. Call for details.`);
-      return parts.join(' ');
-    }
-
-    document.getElementById('genBaseBtn').addEventListener('click', ()=>{
-      const model = {
-        download: document.getElementById('down').value.trim() || '—',
-        upload: document.getElementById('up').value.trim() || '—',
-        promo: document.getElementById('promo').value.trim(),
-        term: document.getElementById('term').value.trim(),
-        stepUpPrice: document.getElementById('stepCheck').checked ? document.getElementById('suPrice').value.trim() : '',
-        stepUpTerm: document.getElementById('stepCheck').checked ? document.getElementById('suTerm').value.trim() : '',
-        regRate: document.getElementById('reg').value.trim(),
-        expires: document.getElementById('expires').value,
-        unlimited: document.getElementById('unlimitedCheck').checked ? 'Yes' : ''
-      };
-      const shortH = buildShortBase();
-      const longH = buildLongBase(model);
-      document.getElementById('shortDisc').value = plain(shortH);
-      document.getElementById('longDisc').value = plain(longH);
-      // Update preview immediately after generation
-      updatePreview();
-    });
-
-    /***************** Boot *****************/
-    (async ()=>{
-      await openDB();
-      populateRateVersionSelect();
-      document.getElementById('automatedTracker').value = autoTracker();
-      updatePreview();
-      await refreshTable();
-    })();
-  </script>
+  <!-- Disclaimer Modal -->
+  <div id="discModal" class="modal hide" role="dialog" aria-modal="true" aria-labelledby="discTitle">
+    <div class="modal-overlay"></div>
+    <div class="modal-card animate-in">
+      <div class="modal-header">
+        <h3 id="discTitle">🪄 Generated Disclaimers Preview</h3>
+        <button class="btn ghost" id="closeModalBtn" aria-label="Close">Close</button>
+      </div>
+      <div class="modal-body">
+        <div class="modal-block">
+          <h4>Short Disclaimer</h4>
+          <pre id="previewShort"></pre>
+        </div>
+        <div class="modal-block">
+          <h4>Long Disclaimer</h4>
+          <pre id="previewLong"></pre>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn ghost" id="cancelDiscBtn">Cancel</button>
+        <button class="btn" id="applyDiscBtn">Apply</button>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
