@@ -31,6 +31,10 @@ function buildLong(m){
 const modal=document.getElementById("disclaimerModal");
 const modalShort=document.getElementById("modalShort");
 const modalLong=document.getElementById("modalLong");
+const offerFormEl = document.getElementById("offerForm");
+const stepUpToggle = document.getElementById("stepCheck");
+const stepUpTermInput = document.getElementById("suTerm");
+const stepUpPriceInput = document.getElementById("suPrice");
 
 document.getElementById("genBaseBtn").addEventListener("click",()=>{
   const model={
@@ -38,8 +42,8 @@ document.getElementById("genBaseBtn").addEventListener("click",()=>{
     upload:up.value.trim()||"10 Mbps",
     promo:promo.value.trim()||"$29.95",
     term:term.value.trim()||"12",
-    stepUpPrice:suPrice.value.trim(),
-    stepUpTerm:suTerm.value.trim(),
+    stepUpPrice:stepUpPriceInput.value.trim(),
+    stepUpTerm:stepUpTermInput.value.trim(),
     regRate:reg.value.trim(),
     expires:expires.value
   };
@@ -55,6 +59,23 @@ applyModal.onclick=()=>{
   modal.classList.add("hide");
   updatePreview();
 };
+
+function syncStepUpFields(){
+  if (!stepUpToggle || !stepUpTermInput || !stepUpPriceInput) return;
+  const show = stepUpToggle.checked;
+  [stepUpTermInput, stepUpPriceInput].forEach(input => {
+    input.classList.toggle("hide", !show);
+    input.disabled = !show;
+  });
+  if(!show){
+    stepUpTermInput.value = "";
+    stepUpPriceInput.value = "";
+  }
+  updatePreview();
+}
+
+if (stepUpToggle) stepUpToggle.addEventListener("change", syncStepUpFields);
+syncStepUpFields();
 
 // Form & table handling
 async function refreshTable(){
@@ -76,21 +97,29 @@ function updatePreview(){
   pShortDisc.textContent=shortDisc.value;
   pLongDisc.textContent=longDisc.value;
   pOfferLine.textContent = generateOfferLine();
+  if (document.getElementById("pChannels"))
+    pChannels.textContent = [...document.querySelectorAll("#channelList input:checked")].map(i => i.value).join(", ");
 }
 
-offerForm.addEventListener("input",updatePreview);
-offerForm.addEventListener("submit",async e=>{
-  e.preventDefault();
-  const rec={
-    campaign:campaign.value,offer:offer.value,promo:promo.value,term:term.value,
-    shortDisc:shortDisc.value,longDisc:longDisc.value
-  };
-  const tx=db.transaction(STORE,"readwrite");
-  tx.objectStore(STORE).add(rec);
-  await refreshTable();
-  offerForm.reset();
-  updatePreview();
-});
+if (offerFormEl){
+  offerFormEl.addEventListener("input",updatePreview);
+  offerFormEl.addEventListener("submit",async e=>{
+    e.preventDefault();
+    const rec={
+      campaign:campaign.value,offer:offer.value,promo:promo.value,term:term.value,
+      shortDisc:shortDisc.value,longDisc:longDisc.value
+    };
+    const tx=db.transaction(STORE,"readwrite");
+    tx.objectStore(STORE).add(rec);
+    await refreshTable();
+    offerFormEl.reset();
+    syncStepUpFields();
+    updatePreview();
+  });
+  offerFormEl.addEventListener("reset", () => {
+    setTimeout(syncStepUpFields, 0);
+  });
+}
 
 openDB().then(refreshTable);
 
@@ -147,18 +176,6 @@ window.addEventListener("DOMContentLoaded", () => {
 
 renderChannelList();
 
-function updatePreview(){
-  pCampaign.textContent=campaign.value;
-  pOffer.textContent=offer.value;
-  pPromo.textContent=promo.value;
-  pTerm.textContent=term.value;
-  pShortDisc.textContent=shortDisc.value;
-  pLongDisc.textContent=longDisc.value;
-  pOfferLine.textContent = generateOfferLine();
-  if (document.getElementById("pChannels"))
-    pChannels.textContent = [...document.querySelectorAll("#channelList input:checked")].map(i => i.value).join(", ");
-}
-
 const DEFAULT_CHANNELS = [
   "META", "Display", "CTV", "Pre-Roll", "YouTube", "Digital Audio", "Broadcast Radio",
   "Broadcast TV", "Nextdoor", "InApp Gaming", "TikTok", "Flyer FullPage", "Flyer HalfPage",
@@ -197,8 +214,8 @@ function generateOfferLine() {
   const parts = [];
 
   if (offer.value) parts.push(offer.value);
-  if (stepCheck.checked && suPrice.value && suTerm.value)
-    parts.push(`Then ${suPrice.value}/mo. for mos. ${suTerm.value}.`);
+  if (stepUpToggle && stepUpToggle.checked && stepUpPriceInput.value && stepUpTermInput.value)
+    parts.push(`Then ${stepUpPriceInput.value}/mo. for mos. ${stepUpTermInput.value}.`);
   if (reg.value) parts.push(`Reg. ${reg.value}.`);
   if (gcCheck.checked && gcAmt.value) parts.push(`${gcAmt.value} Gift Card.`);
   if (equipIncluded.checked) parts.push(`Includes equipment.`);
