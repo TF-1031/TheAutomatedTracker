@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>The Automated Tracker</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+  <div class="wrap">
+    <h1>The Automated Tracker</h1>
+
+    <!-- OFFER FORM -->
+    <div class="card">
+      <form id="offerForm">
+        <div class="grid">
+          <div class="col-6">
+            <label>Rate Version</label>
+            <select id="rateVersion"></select>
+            <div id="rateVersionNewWrap" class="hide">
+              <input type="text" id="rateVersionNew" placeholder="Enter New Rate Version">
+              <label class="row red"><input type="checkbox" id="rateVersionSavePerm"> Save this new Rate Version</label>
+            </div>
+          </div>
+          <div class="col-2"><label>Fiber</label><div class="row"><input type="checkbox" id="fiberCheck"><span>Fiber</span></div></div>
+          <div class="col-4"><label>Campaign</label><input type="text" id="campaign" placeholder="Campaign name"></div>
+          <div class="col-12"><label>Offer Summary</label><input type="text" id="offer" placeholder="100 Mbps for $29.95/mo. for 12 mos. w/ Auto Pay Paperless billing."></div>
+          <div class="col-3"><label>Download</label><input type="text" id="down" placeholder="100 Mbps"></div>
+          <div class="col-3"><label>Upload</label><input type="text" id="up" placeholder="10 Mbps"></div>
+          <div class="col-3"><label>Promo Price</label><input type="text" id="promo" placeholder="$29.95"></div>
+          <div class="col-3"><label>Term (mos.)</label><input type="text" id="term" placeholder="12"></div>
+
+          <div class="col-4">
+            <label>Gift Card</label>
+            <div class="row"><input type="checkbox" id="gcCheck"><input type="text" id="gcAmt" class="hide" value="$100"></div>
+          </div>
+
+          <div class="col-4">
+            <label>Step-Up Pricing</label>
+            <div class="row">
+              <input type="checkbox" id="stepCheck">
+              <input type="text" id="suTerm" class="hide" placeholder="7–12">
+              <input type="text" id="suPrice" class="hide" placeholder="$59.95">
+            </div>
+          </div>
+
+          <div class="col-4"><label>Reg Rate</label><input type="text" id="reg" placeholder="$75–$90"></div>
+
+          <div class="col-4"><label>Equipment Included</label><div class="row"><input type="checkbox" id="equipIncluded"></div></div>
+          <div class="col-4"><label>eero/Plume Mentioned</label><div class="row"><input type="checkbox" id="eeroMentioned"></div></div>
+          <div class="col-4"><label>Expiration</label><input type="date" id="expires"></div>
+          <div class="col-4"><label>Unlimited Data</label><div class="row"><input type="checkbox" id="unlimitedCheck" checked></div></div>
+
+          <div class="col-12 hr"></div>
+
+          <div class="col-6"><label>Short Disclaimer</label><textarea id="shortDisc"></textarea></div>
+          <div class="col-6"><label>Long Disclaimer</label><textarea id="longDisc"></textarea></div>
+
+          <div class="col-12" style="text-align:right;">
+            <button type="button" class="btn ghost" id="genBaseBtn">🪄 Generate Disclaimers</button>
+          </div>
+
+          <div class="col-12 hr"></div>
+          <div class="col-12" style="text-align:right;">
+            <button type="reset" class="btn ghost" id="resetFormBtn">Reset</button>
+            <button type="submit" class="btn">Save Offer</button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- OFFER PREVIEW -->
+    <div class="card" id="offerPreviewCard">
+      <div id="offerPreviewHeader">Offer Summary Preview</div>
+      <div id="offerPreviewBody">
+        <strong>Campaign:</strong> <span id="pCampaign">—</span><br>
+        <strong>Offer:</strong> <span id="pOffer">—</span><br>
+        <strong>Promo:</strong> <span id="pPromo">—</span> <strong>Term:</strong> <span id="pTerm">—</span><br>
+        <strong>Short Disclaimer:</strong><br><span id="pShortDisc">—</span><br>
+        <strong>Long Disclaimer:</strong><br><span id="pLongDisc">—</span>
+      </div>
+    </div>
+
+    <!-- TABLE -->
+    <div class="card" style="overflow:auto;">
+      <table id="offersTable">
+        <thead><tr id="tableHeaderRow"></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- MODAL -->
+    <div id="disclaimerModal" class="modal hide">
+      <div class="modal-bg"></div>
+      <div class="modal-content">
+        <h3>Generated Disclaimers</h3>
+        <p><strong>Short:</strong></p>
+        <div id="modalShort"></div>
+        <p><strong>Long:</strong></p>
+        <div id="modalLong"></div>
+        <div class="modal-actions">
+          <button class="btn ghost" id="cancelModal">Cancel</button>
+          <button class="btn" id="applyModal">Apply</button>
+        </div>
+      </div>
+    </div>
+
+    <footer>© 2025 Sparklight Offer Management • The Automated Tracker</footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

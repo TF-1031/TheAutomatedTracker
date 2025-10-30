@@ -1,0 +1,44 @@
+:root {
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --ink: #0f172a;
+  --muted: #475569;
+  --brand: #0284c7;
+  --brand-dark: #0369a1;
+  --accent: #d32f2f;
+}
+
+body { margin:0; font-family:system-ui; background:var(--bg); color:var(--ink);}
+.wrap { max-width:1100px; margin:32px auto; padding:0 16px;}
+h1 { color:var(--brand-dark); }
+
+.card {
+  background: var(--card);
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.05);
+  padding: 18px;
+  margin-bottom: 18px;
+}
+.grid { display:grid; gap:14px; grid-template-columns:repeat(12,1fr);}
+.col-2{grid-column:span 2}.col-3{grid-column:span 3}.col-4{grid-column:span 4}.col-6{grid-column:span 6}.col-12{grid-column:span 12}
+label {font-size:12px;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:4px;}
+input,textarea,select{width:100%;padding:8px 10px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;}
+textarea{min-height:60px;}
+.btn{border:none;padding:8px 12px;border-radius:8px;font-weight:600;cursor:pointer;background:var(--brand);color:#fff;}
+.btn:hover{background:var(--brand-dark);}
+.btn.ghost{background:transparent;border:1px solid var(--brand);color:var(--brand-dark);}
+.btn.ghost:hover{background:#e0f2fe;}
+.hide{display:none;}
+.hr{height:1px;background:#e2e8f0;margin:10px 0;}
+.row{display:flex;align-items:center;gap:8px;}
+footer{text-align:center;font-size:12px;color:var(--muted);margin-top:20px;}
+
+/* Modal styling */
+.modal{position:fixed;top:0;left:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;z-index:100;}
+.modal-bg{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.4);}
+.modal-content{position:relative;background:#fff;border-radius:12px;max-width:500px;padding:20px;animation:fadeUp .25s ease;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px);}to{opacity:1;transform:translateY(0);}}
+.modal.hide{display:none;}
+.modal-actions{text-align:right;margin-top:10px;}
+.red{color:var(--accent);}
