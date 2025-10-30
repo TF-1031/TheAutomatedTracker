@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -48,10 +47,10 @@
 
           <div class="col-4"><label>Reg Rate</label><input type="text" id="reg" placeholder="$75–$90"></div>
 
-          <div class="col-4"><label>Equipment Included</label><div class="row"><input type="checkbox" id="equipIncluded"><span>Included</span></div></div>
-          <div class="col-4"><label>eero/Plume Mentioned</label><div class="row"><input type="checkbox" id="eeroMentioned"><span>Yes</span></div></div>
+          <div class="col-4"><label>Equipment Included</label><div class="row"><input type="checkbox" id="equipIncluded"></div></div>
+          <div class="col-4"><label>eero/Plume Mentioned</label><div class="row"><input type="checkbox" id="eeroMentioned"></div></div>
           <div class="col-4"><label>Expiration</label><input type="date" id="expires"></div>
-          <div class="col-4"><label>Unlimited Data</label><div class="row"><input type="checkbox" id="unlimitedCheck" checked><span>Yes</span></div></div>
+          <div class="col-4"><label>Unlimited Data</label><div class="row"><input type="checkbox" id="unlimitedCheck" checked></div></div>
 
           <div class="col-12 hr"></div>
 
@@ -68,18 +67,36 @@
             <button type="submit" class="btn">Save Offer</button>
           </div>
         </div>
-      </form>
+      
+<div class="col-12">
+  <label>Requested Channels</label>
+  <div id="channelList" class="grid"></div>
+  <div class="row" style="margin-top: 6px;">
+    <input type="text" id="channelNew" placeholder="Add custom channel">
+    <button type="button" class="btn ghost" id="channelAddBtn">Add</button>
+  </div>
+</div>
+
+</form>
     </div>
 
     <!-- OFFER PREVIEW -->
     <div class="card" id="offerPreviewCard">
+    <!-- FORMATTED OFFER CARD PREVIEW -->
+    <div class="card" id="offerLineCard">
+      <div id="offerLineHeader">Offer Summary Card</div>
+      <div id="offerLineBody" style="font-weight:500;">
+        <span id="pOfferLine">—</span>
+      </div>
+    </div>
+
       <div id="offerPreviewHeader">Offer Summary Preview</div>
       <div id="offerPreviewBody">
         <strong>Campaign:</strong> <span id="pCampaign">—</span><br>
         <strong>Offer:</strong> <span id="pOffer">—</span><br>
         <strong>Promo:</strong> <span id="pPromo">—</span> <strong>Term:</strong> <span id="pTerm">—</span><br>
         <strong>Short Disclaimer:</strong><br><span id="pShortDisc">—</span><br>
-        <strong>Long Disclaimer:</strong><br><span id="pLongDisc">—</span>
+        <strong>Long Disclaimer:</strong><br><span id="pLongDisc">—</span><br><strong>Channels:</strong> <span id="pChannels">—</span>
       </div>
     </div>
 
@@ -89,12 +106,6 @@
         <thead><tr id="tableHeaderRow"></tr></thead>
         <tbody></tbody>
       </table>
-    </div>
-
-    <!-- EXPORT BUTTONS -->
-    <div style="text-align:right; margin-top:10px;">
-      <button class="btn ghost" id="exportCSV">Export CSV</button>
-      <button class="btn ghost" id="exportXLSX">Export XLSX</button>
     </div>
 
     <!-- MODAL -->

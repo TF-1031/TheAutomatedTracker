@@ -22,7 +22,8 @@ function buildLong(m){
   if(m.stepUpPrice) out+=`Then ${m.stepUpPrice}/mo. for mos. ${m.stepUpTerm}. `;
   if(m.regRate) out+=`Regular rates from ${m.regRate}/mo. `;
   if(m.expires) out+=`Offer expires ${m.expires}. `;
-  out+="Taxes, fees, and restrictions apply.";
+  out+="Taxes, fees, and restrictions apply. ";
+  if (m.eeroMentioned === 'Yes') out+="eero and all related marks are trademarks of Amazon.com, Inc. or its affiliates.";
   return out;
 }
 
@@ -74,6 +75,7 @@ function updatePreview(){
   pTerm.textContent=term.value;
   pShortDisc.textContent=shortDisc.value;
   pLongDisc.textContent=longDisc.value;
+  pOfferLine.textContent = generateOfferLine();
 }
 
 offerForm.addEventListener("input",updatePreview);
@@ -91,3 +93,115 @@ offerForm.addEventListener("submit",async e=>{
 });
 
 openDB().then(refreshTable);
+
+
+const RATE_VERSION_KEY = "rate_version_list";
+const DEFAULT_VERSIONS = [
+  "Core",
+  "Core_FMAJ",
+  "Core_NoEERO",
+  "Core_Equip",
+  "Core_Max_VIC HHI",
+  "Core_Max_Equip",
+  "Core_Max_Exp",
+  "Core_Max_Equip_Sioux",
+  "Enhanced",
+  "Enhanced_Equip",
+  "Enhanced_Max",
+  "Enhanced_Max_Equip",
+  "Enhanced_Max_Equip_NoPromo",
+  "Edge",
+  "Edge_Equip",
+  "Edge_Max",
+  "Core_APTest_A",
+  "Core_APTest_B",
+  "Enhanced_APTest_A",
+  "Enhanced_APTest_B",
+  "Enhanced_Equip_APTest_A",
+  "Enhanced_Equip_APTest_B",
+  "Core_MMTest_B",
+  "Enhanced_MMTest_B",
+  "Enhanced_Equip_MMTest_B",
+  "Enhanced_Equip",
+  "General/Univeral",
+  "Brand",
+  "Core_His",
+  "Brand_His",
+  "Core Hispanic"
+];
+
+function loadRateVersions() {
+  const saved = JSON.parse(localStorage.getItem(RATE_VERSION_KEY)) || DEFAULT_VERSIONS;
+  const sel = document.getElementById("rateVersion");
+  sel.innerHTML = "";
+  saved.forEach(v => {
+    const opt = document.createElement("option");
+    opt.value = opt.textContent = v;
+    sel.appendChild(opt);
+  });
+}
+
+window.addEventListener("DOMContentLoaded", () => {
+  loadRateVersions();
+});
+
+renderChannelList();
+
+function updatePreview(){
+  pCampaign.textContent=campaign.value;
+  pOffer.textContent=offer.value;
+  pPromo.textContent=promo.value;
+  pTerm.textContent=term.value;
+  pShortDisc.textContent=shortDisc.value;
+  pLongDisc.textContent=longDisc.value;
+  pOfferLine.textContent = generateOfferLine();
+  if (document.getElementById("pChannels"))
+    pChannels.textContent = [...document.querySelectorAll("#channelList input:checked")].map(i => i.value).join(", ");
+}
+
+const DEFAULT_CHANNELS = [
+  "META", "Display", "CTV", "Pre-Roll", "YouTube", "Digital Audio", "Broadcast Radio",
+  "Broadcast TV", "Nextdoor", "InApp Gaming", "TikTok", "Flyer FullPage", "Flyer HalfPage",
+  "Doorhanger", "Yardsign", "OOH Dig Billboard", "Billboard"
+];
+
+function renderChannelList(channels = DEFAULT_CHANNELS) {
+  const wrap = document.getElementById("channelList");
+  if (!wrap) return;
+  wrap.innerHTML = "";
+  channels.forEach(c => {
+    const id = "chan_" + c.replace(/\s+/g, "_");
+    const div = document.createElement("div");
+    div.className = "col-3";
+    div.innerHTML = `<label class="row"><input type="checkbox" id="${id}" value="${c}"><span>${c}</span></label>`;
+    wrap.appendChild(div);
+  });
+}
+
+document.getElementById("channelAddBtn").addEventListener("click", () => {
+  const val = document.getElementById("channelNew").value.trim();
+  if (!val) return;
+  const allLabels = [...document.querySelectorAll("#channelList input")].map(el => el.value);
+  if (!allLabels.includes(val)) {
+    DEFAULT_CHANNELS.push(val);
+    renderChannelList(DEFAULT_CHANNELS);
+  }
+  document.getElementById("channelNew").value = "";
+});
+
+// Injected into form submit:
+rec.channels = [...document.querySelectorAll("#channelList input:checked")].map(i => i.value);
+
+
+function generateOfferLine() {
+  const parts = [];
+
+  if (offer.value) parts.push(offer.value);
+  if (stepCheck.checked && suPrice.value && suTerm.value)
+    parts.push(`Then ${suPrice.value}/mo. for mos. ${suTerm.value}.`);
+  if (reg.value) parts.push(`Reg. ${reg.value}.`);
+  if (gcCheck.checked && gcAmt.value) parts.push(`${gcAmt.value} Gift Card.`);
+  if (equipIncluded.checked) parts.push(`Includes equipment.`);
+
+  return parts.join(" ");
+}

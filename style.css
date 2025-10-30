@@ -43,4 +43,17 @@ footer{text-align:center;font-size:12px;color:var(--muted);margin-top:20px;}
 .modal-actions{text-align:right;margin-top:10px;}
 .red{color:var(--accent);}
 
-.row input[type='checkbox'] { margin: 0; }
+.row input[type='checkbox'] {
+  margin: 0;
+  padding: 0;
+  width: 16px;
+  height: 16px;
+  vertical-align: middle;
+}
+
+.row span {
+  font-size: 14px;
+  line-height: 1;
+  vertical-align: middle;
+  margin-left: 2px;
+}
