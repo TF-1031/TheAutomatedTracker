@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -47,10 +48,10 @@
 
           <div class="col-4"><label>Reg Rate</label><input type="text" id="reg" placeholder="$75–$90"></div>
 
-          <div class="col-4"><label>Equipment Included</label><div class="row"><input type="checkbox" id="equipIncluded"></div></div>
-          <div class="col-4"><label>eero/Plume Mentioned</label><div class="row"><input type="checkbox" id="eeroMentioned"></div></div>
+          <div class="col-4"><label>Equipment Included</label><div class="row"><input type="checkbox" id="equipIncluded"><span>Included</span></div></div>
+          <div class="col-4"><label>eero/Plume Mentioned</label><div class="row"><input type="checkbox" id="eeroMentioned"><span>Yes</span></div></div>
           <div class="col-4"><label>Expiration</label><input type="date" id="expires"></div>
-          <div class="col-4"><label>Unlimited Data</label><div class="row"><input type="checkbox" id="unlimitedCheck" checked></div></div>
+          <div class="col-4"><label>Unlimited Data</label><div class="row"><input type="checkbox" id="unlimitedCheck" checked><span>Yes</span></div></div>
 
           <div class="col-12 hr"></div>
 
@@ -88,6 +89,12 @@
         <thead><tr id="tableHeaderRow"></tr></thead>
         <tbody></tbody>
       </table>
+    </div>
+
+    <!-- EXPORT BUTTONS -->
+    <div style="text-align:right; margin-top:10px;">
+      <button class="btn ghost" id="exportCSV">Export CSV</button>
+      <button class="btn ghost" id="exportXLSX">Export XLSX</button>
     </div>
 
     <!-- MODAL -->
